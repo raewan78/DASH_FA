@@ -3186,9 +3186,11 @@ function renderOverallGantt() {
 
   const openCases = CASES.filter(c => c.status === 'open' && c.returnDate);
 
-  const ROW_H = 38;
-  const PT = 32, PB = 36, PL = 72, PR = 16;
-  const H = PT + PB + Math.max(1, openCases.length) * ROW_H;
+  const CASE_H  = 38;
+  const AXIS_H  = 18;
+  const ROW_TOT = CASE_H + AXIS_H;
+  const PT = 32, PB = 28, PL = 72, PR = 16;
+  const H = PT + PB + Math.max(1, openCases.length) * ROW_TOT;
   const W = canvas.parentElement.clientWidth || 800;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width  = W * DPR;
@@ -3241,30 +3243,16 @@ function renderOverallGantt() {
     return { id: c.id, base, stages };
   });
 
-  /* find the soonest upcoming next-FA-stage date → use as D+0 anchor */
-  const nextStageDates = openCases.map(c => {
-    const next = STAGE_NEXT[c.stage];
-    if (!next) return null;
-    const off = TARGET_OFFSETS.find(o => o.key === next.key);
-    if (!off) return null;
-    const [mm2, dd2] = c.returnDate.split('/');
-    const b2 = new Date(`${yr}-${mm2.padStart(2,'0')}-${dd2.padStart(2,'0')}T00:00:00`);
-    b2.setHours(0, 0, 0, 0);
-    const td2 = new Date(b2.getTime());
-    let added2 = 0;
-    while (added2 < off.n) { td2.setDate(td2.getDate() + 1); if (isWorkingDay(td2)) added2++; }
-    td2.setHours(0, 0, 0, 0);
-    return td2;
-  }).filter(Boolean);
-  const anchor = nextStageDates.length
-    ? new Date(Math.min(...nextStageDates.map(d => d.getTime())))
-    : today;
+  /* anchor 제거 — 각 케이스별 D+N 축으로 대체 */
 
   const allMs = [today.getTime()];
-  caseRows.forEach(r => r.stages.forEach(s => {
-    allMs.push(s.targetDate.getTime());
-    if (s.actualDate) allMs.push(s.actualDate.getTime());
-  }));
+  caseRows.forEach(r => {
+    allMs.push(r.base.getTime());
+    r.stages.forEach(s => {
+      allMs.push(s.targetDate.getTime());
+      if (s.actualDate) allMs.push(s.actualDate.getTime());
+    });
+  });
   const dayMs  = 86400000;
   const padDays = 2;
   const originDay = new Date(Math.min(...allMs) - padDays * dayMs); originDay.setHours(0,0,0,0);
@@ -3288,8 +3276,8 @@ function renderOverallGantt() {
     const p = posMap.get(k.getTime());
     return PL + ((p ?? 0) / totalUnits) * cW;
   };
-  const toY = i => PT + ROW_H * i + ROW_H / 2;
-  const axisY = PT + caseRows.length * ROW_H;
+  const toY = i => PT + ROW_TOT * i + CASE_H / 2;
+  const axisY = PT + caseRows.length * ROW_TOT;
 
   const C_arrived = '#DDB030'; /* amber — distinct from target/actual */
 
@@ -3392,57 +3380,71 @@ function renderOverallGantt() {
     });
   });
 
-  /* x-axis: working day ticks with ±N-from-today labels + date */
-  const tickStart = new Date(originDay); tickStart.setHours(0, 0, 0, 0);
-  const tickEnd   = new Date(endDay);    tickEnd.setHours(0, 0, 0, 0);
+  const tickStart = new Date(originDay); tickStart.setHours(0,0,0,0);
+  const tickEnd   = new Date(endDay);    tickEnd.setHours(0,0,0,0);
 
-  // count WDs from tickStart up to (not including) anchor (next stage date) → wi offset
-  let wdToAnchor = 0;
-  const counter = new Date(tickStart);
-  while (counter.getTime() < anchor.getTime()) {
-    if (isWorkingDay(counter)) wdToAnchor++;
-    counter.setDate(counter.getDate() + 1);
-  }
+  /* per-case D+N mini axis (below each row) */
+  caseRows.forEach((row, i) => {
+    const rowAxisY = PT + ROW_TOT * i + CASE_H;
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, rowAxisY); ctx.lineTo(W - PR, rowAxisY); ctx.stroke();
 
-  let wi = -wdToAnchor;
-  const cur = new Date(tickStart);
+    let wdToBase = 0;
+    const cnt = new Date(tickStart);
+    while (cnt.getTime() < row.base.getTime()) {
+      if (isWorkingDay(cnt)) wdToBase++;
+      cnt.setDate(cnt.getDate() + 1);
+    }
+
+    let wd_i = -wdToBase;
+    const cur_i = new Date(tickStart);
+    let lastX_i = -999;
+
+    while (cur_i.getTime() <= tickEnd.getTime()) {
+      if (isWorkingDay(cur_i)) {
+        const x = toX(cur_i);
+        if (x >= PL && x <= W - PR && x - lastX_i >= 22) {
+          const isD0 = wd_i === 0;
+          const wdLbl = wd_i === 0 ? 'D+0' : wd_i > 0 ? 'D+' + wd_i : 'D' + wd_i;
+          ctx.strokeStyle = isD0 ? C_arrived : C.border;
+          ctx.lineWidth = isD0 ? 1.5 : 0.5;
+          ctx.beginPath(); ctx.moveTo(x, rowAxisY); ctx.lineTo(x, rowAxisY + 4); ctx.stroke();
+          ctx.fillStyle = isD0 ? C_arrived : C.muted;
+          ctx.font = isD0 ? 'bold 10px sans-serif' : '10px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillText(wdLbl, x, rowAxisY + 2);
+          lastX_i = x;
+        }
+        wd_i++;
+      }
+      cur_i.setDate(cur_i.getDate() + 1);
+    }
+  });
+
+  /* bottom axis — calendar dates only */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
   let lastLabelX = -999;
-
+  const cur = new Date(tickStart);
   while (cur.getTime() <= tickEnd.getTime()) {
     if (isWorkingDay(cur)) {
       const x = toX(cur);
+      const isT = cur.getTime() === today.getTime();
       if (x >= PL && x <= W - PR) {
-        const isT = cur.getTime() === today.getTime();
-
-        // tick mark
         ctx.strokeStyle = isT ? C.today : C.border;
-        ctx.lineWidth   = isT ? 1.5 : 0.5;
+        ctx.lineWidth = isT ? 1.5 : 0.5;
         ctx.setLineDash([]);
-        ctx.beginPath();
-        ctx.moveTo(x, axisY);
-        ctx.lineTo(x, axisY + (isT ? 6 : 4));
-        ctx.stroke();
-
-        // labels: skip if too close to previous
+        ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + 4); ctx.stroke();
         if (x - lastLabelX >= 22) {
-          const wdLbl = wi === 0 ? 'D+0' : wi > 0 ? 'D+' + wi : 'D' + wi;
-          const dateLbl = (cur.getMonth() + 1) + '/' + String(cur.getDate()).padStart(2, '0');
-          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-
-          // WD offset line
+          const dateLbl = (cur.getMonth() + 1) + '/' + cur.getDate();
           ctx.fillStyle = isT ? C.today : C.pri;
-          ctx.font = 'bold 12px sans-serif';
-          ctx.fillText(wdLbl, x, axisY + 7);
-
-          // date line
-          ctx.fillStyle = C.pri;
-          ctx.font = '11px sans-serif';
-          ctx.fillText(dateLbl, x, axisY + 21);
-
+          ctx.font = isT ? 'bold 11px sans-serif' : '11px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillText(dateLbl, x, axisY + 6);
           lastLabelX = x;
         }
       }
-      wi++;
     }
     cur.setDate(cur.getDate() + 1);
   }
