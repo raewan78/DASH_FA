@@ -787,6 +787,23 @@ td {
 .login-btn:active { opacity: 0.75; }
 .login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+.guest-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.guest-btn:hover { background: var(--surface-hover); color: var(--accent); border-color: var(--accent); }
+
 .login-footer {
   padding: 14px 32px;
   border-top: 1px solid var(--border);
@@ -1423,7 +1440,8 @@ tbody tr:hover {
         <input id="inp-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
       </div>
       <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
-      <button type="submit" class="login-btn">로그인</button>
+      <button type="submit" class="login-btn">Admin 로그인</button>
+      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 로그인 없이 보기 (View only)</button>
     </form>
     <div class="login-footer">FT CASE Management &nbsp;·&nbsp; Sprint 3</div>
   </div>
@@ -1448,7 +1466,7 @@ tbody tr:hover {
       <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
     </div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
-    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+    <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
 </header>
 
@@ -2299,9 +2317,19 @@ function applyRole() {
   if (da) da.style.display = isAdmin ? 'flex' : 'none';
   const roleTag = document.getElementById('role-tag');
   if (roleTag) {
-    roleTag.textContent = isAdmin ? 'ADMIN' : 'VIEW ONLY';
-    roleTag.style.color = isAdmin ? 'var(--prio-h)' : 'var(--text-muted)';
+    if (isAdmin) {
+      roleTag.textContent = 'ADMIN';
+      roleTag.style.color = 'var(--prio-h)';
+    } else if (currentUser && currentUser.role === 'viewer') {
+      roleTag.textContent = 'VIEWER';
+      roleTag.style.color = 'var(--text-muted)';
+    } else {
+      roleTag.textContent = 'GUEST';
+      roleTag.style.color = 'var(--text-muted)';
+    }
   }
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.textContent = isAdmin ? 'Logout' : '← Admin Login';
 }
 
 function exportData() {
@@ -3181,6 +3209,29 @@ function saveDetail() {
 }
 
 /* ── LOGOUT / LOGIN ─────────────────────────────── */
+function enterDashboard() {
+  const screen = document.getElementById('login-screen');
+  const dash   = document.getElementById('dashboard');
+  screen.classList.add('fade-out');
+  dash.classList.add('visible');
+  screen.addEventListener('animationend', () => {
+    screen.style.display = 'none';
+    loadCases();
+    applyRole();
+    initTheme();
+    updateKPIs();
+    buildTable();
+    requestAnimationFrame(animateDonut);
+    setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
+  }, { once: true });
+}
+
+function enterAsGuest() {
+  currentUser = { id: 'guest', role: 'guest' };
+  document.getElementById('login-error').classList.remove('visible');
+  enterDashboard();
+}
+
 function handleLogout() {
   const screen = document.getElementById('login-screen');
   const dash   = document.getElementById('dashboard');
@@ -3204,20 +3255,7 @@ function handleLogin(e) {
   if (matched) {
     currentUser = matched;
     err.classList.remove('visible');
-    const screen = document.getElementById('login-screen');
-    const dash   = document.getElementById('dashboard');
-    screen.classList.add('fade-out');
-    dash.classList.add('visible');
-    screen.addEventListener('animationend', () => {
-      screen.style.display = 'none';
-      loadCases();
-      applyRole();
-      initTheme();
-      updateKPIs();
-      buildTable();
-      requestAnimationFrame(animateDonut);
-      setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
-    }, { once: true });
+    enterDashboard();
   } else {
     err.classList.add('visible');
     document.getElementById('inp-pw').value = '';
