@@ -3170,8 +3170,9 @@ function renderGanttChart(prefix) {
         ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + (isT || isBase || isTgt ? 5 : 3)); ctx.stroke();
 
         if (x - lastLX >= 22) {
-          const wd    = wdBetween(today, cur);
-          const wdLbl = isT ? 'Today' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
+          const ref   = isClosed ? base : today;
+          const wd    = wdBetween(ref, cur);
+          const wdLbl = (!isClosed && isT) ? 'Today' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
           const dateLbl = (cur.getMonth()+1) + '/' + String(cur.getDate()).padStart(2,'0');
           ctx.textAlign = 'center'; ctx.textBaseline = 'top';
           ctx.fillStyle = isT ? C.today : isBase ? C.arrived : isTgt ? C.accent : C.muted;
