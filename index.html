@@ -1757,8 +1757,11 @@ tbody tr:hover {
         <input type="text" id="jb-bin-id" placeholder="67a1b2c3d4e5f6..." autocomplete="off">
         <span class="settings-hint">새 Bin을 만들면 ID가 주어집니다. 비워두면 자동 생성합니다.</span>
       </div>
-      <div>
-        <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 연결 테스트</button>
+      <div style="display:flex;gap:8px;align-items:flex-start;flex-direction:column;">
+        <div style="display:flex;gap:8px;">
+          <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 연결 테스트</button>
+          <button class="data-btn" onclick="forceSyncNow()" style="font-size:12px;">⬆ 지금 동기화</button>
+        </div>
         <div id="jb-test-result"></div>
       </div>
     </div>
@@ -2762,6 +2765,15 @@ function saveJbSettings() {
   else       localStorage.removeItem(JB_BIN_STORE);
   closeSettingsModal();
   pushToJsonBin(CASES);
+}
+
+async function forceSyncNow() {
+  const res = document.getElementById('jb-test-result');
+  res.style.color = 'var(--text-muted)';
+  res.textContent = '동기화 중…';
+  await pushToJsonBin(CASES);
+  res.style.color = '#4caf50';
+  res.textContent = '✓ ' + CASES.length + '건 동기화 완료';
 }
 
 async function testJbConnection() {
