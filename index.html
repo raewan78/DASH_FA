@@ -1,8 +1,6 @@
-<!doctype html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<html lang="ko" class="light"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FT CASE 진행 상황</title>
 <style>
 :root {
@@ -1474,7 +1472,7 @@ tbody tr:hover {
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen">
+<div id="login-screen" class="fade-out" style="display: none;">
   <div class="login-box">
     <div class="login-top">
       <div class="login-sys">QA System</div>
@@ -1484,11 +1482,11 @@ tbody tr:hover {
     <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
       <div class="field">
         <label for="inp-id">ID</label>
-        <input id="inp-id" type="text" placeholder="아이디 입력" autocomplete="username" />
+        <input id="inp-id" type="text" placeholder="아이디 입력" autocomplete="username">
       </div>
       <div class="field">
         <label for="inp-pw">Password</label>
-        <input id="inp-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
+        <input id="inp-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
       </div>
       <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
       <button type="submit" class="login-btn">Admin 로그인</button>
@@ -1499,7 +1497,7 @@ tbody tr:hover {
 </div>
 
 <!-- DASHBOARD WRAPPER -->
-<div id="dashboard">
+<div id="dashboard" class="visible">
 
 <!-- HEADER -->
 <header class="header">
@@ -1510,12 +1508,12 @@ tbody tr:hover {
   <div class="header-right">
     <span class="live"><span class="live-dot"></span>LIVE</span>
     <span>기준일: 2026-06-30</span>
-    <span id="role-tag" style="font-size:10px;font-weight:700;letter-spacing:.1em;"></span>
-    <div id="data-actions">
+    <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
+    <div id="data-actions" style="display: flex;">
       <button class="data-btn" onclick="openExportModal()" title="케이스 데이터 내보내기">⬇ Export</button>
       <button class="data-btn" onclick="openImportModal()" title="케이스 데이터 불러오기">⬆ Import</button>
     </div>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환">☀️</button>
     <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
 </header>
@@ -1527,27 +1525,27 @@ tbody tr:hover {
   <div class="kpi-row">
     <div class="kpi kpi-total">
       <div class="kpi-label">총 케이스</div>
-      <div class="kpi-value" id="cnt-total">10</div>
+      <div class="kpi-value" id="cnt-total">2</div>
       <div class="kpi-sub">Sprint 3 대상</div>
     </div>
     <div class="kpi kpi-prog">
       <div class="kpi-label">Open</div>
-      <div class="kpi-value" id="cnt-open">8</div>
-      <div class="kpi-sub" id="sub-open">80.0%</div>
+      <div class="kpi-value" id="cnt-open">1</div>
+      <div class="kpi-sub" id="sub-open">50.0%</div>
     </div>
     <div class="kpi kpi-done">
       <div class="kpi-label">Close</div>
-      <div class="kpi-value" id="cnt-close">2</div>
-      <div class="kpi-sub" id="sub-close">20.0%</div>
+      <div class="kpi-value" id="cnt-close">1</div>
+      <div class="kpi-sub" id="sub-close">50.0%</div>
     </div>
     <div class="kpi kpi-late">
       <div class="kpi-label">HIGH Priority</div>
-      <div class="kpi-value" id="cnt-high">5</div>
+      <div class="kpi-value" id="cnt-high">0</div>
       <div class="kpi-sub">긴급 케이스</div>
     </div>
     <div class="kpi kpi-wait">
       <div class="kpi-label">Returned Units</div>
-      <div class="kpi-value" id="cnt-units">7</div>
+      <div class="kpi-value" id="cnt-units">2</div>
       <div class="kpi-sub">총 반환 수량</div>
     </div>
   </div>
@@ -1565,10 +1563,31 @@ tbody tr:hover {
         </span>
       </div>
       <div class="timeline-body">
-        <canvas id="overall-gantt"></canvas>
+        <canvas id="overall-gantt" width="1511" height="116" style="height: 106px;"></canvas>
         <div class="next-action-wrap">
           <div class="next-action-title">Next Report</div>
-          <div id="next-actions"></div>
+          <div id="next-actions">
+    <table class="na-table">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>End Customer</th>
+          <th>Next FA Stage</th>
+          <th>Target Date</th>
+          <th style="text-align:right">D-Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td style="font-weight:600;color:var(--accent)">009777</td>
+            <td style="color:var(--text-primary)">Insta360</td>
+            <td><span class="sbadge sb-i123">Interim (2)</span></td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-primary)">7/07</td>
+            <td style="text-align:right"><span class="na-dday soon">D-3</span></td>
+          </tr>
+      </tbody>
+    </table></div>
         </div>
       </div>
     </div>
@@ -1584,9 +1603,9 @@ tbody tr:hover {
             </button>
           </div>
           <div class="filter-tabs">
-            <button class="ftab active" data-filter="all"   onclick="filterTable(this,'all')">전체</button>
-            <button class="ftab"        data-filter="open"  onclick="filterTable(this,'open')">Open</button>
-            <button class="ftab"        data-filter="close" onclick="filterTable(this,'close')">Close</button>
+            <button class="ftab active" data-filter="all" onclick="filterTable(this,'all')">전체</button>
+            <button class="ftab" data-filter="open" onclick="filterTable(this,'open')">Open</button>
+            <button class="ftab" data-filter="close" onclick="filterTable(this,'close')">Close</button>
           </div>
         </div>
       </div>
@@ -1605,9 +1624,27 @@ tbody tr:hover {
               <th>진척도</th>
             </tr>
           </thead>
-          <tbody id="ft-body">
-            <!-- rows injected by JS -->
-          </tbody>
+          <tbody id="ft-body"><tr onclick="openDetail('009777')" title="클릭하여 상세 보기">
+      <td class="td-id">009777</td>
+      <td class="td-name">Insta360</td>
+      <td class="td-assignee">RYU</td>
+      <td><span class="pill s-progress"><span class="pill-dot"></span>Open</span></td>
+      <td><span class="prio p-m">MED</span></td>
+      <td><span class="sbadge sb-i123">Interim (1)</span></td>
+      <td class="td-date">06/25</td>
+      <td><span class="issue issue-y">1</span></td>
+      <td><span class="timing t-ontime">On time</span></td>
+    </tr><tr onclick="openDetail('009746')" title="클릭하여 상세 보기">
+      <td class="td-id">009746</td>
+      <td class="td-name">HYBUS</td>
+      <td class="td-assignee">RYU</td>
+      <td><span class="pill s-done"><span class="pill-dot"></span>Close</span></td>
+      <td><span class="prio p-m">MED</span></td>
+      <td><span class="sbadge sb-f4d">Final 4D</span></td>
+      <td class="td-date">05/26</td>
+      <td><span class="issue issue-y">1</span></td>
+      <td><span class="timing t-closed">Closed</span></td>
+    </tr></tbody>
         </table>
       </div>
     </div>
@@ -1620,19 +1657,23 @@ tbody tr:hover {
 </div><!-- /dashboard -->
 
 <!-- EXPORT / IMPORT MODAL -->
-<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()">
+<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()" class="open">
   <div class="data-modal">
     <div class="data-modal-header">
-      <span class="data-modal-title" id="data-modal-title">Export</span>
+      <span class="data-modal-title" id="data-modal-title">⬇ Export</span>
       <button class="modal-close" onclick="closeDataModal()">×</button>
     </div>
     <div class="data-modal-body">
-      <span class="data-modal-note" id="data-modal-note"></span>
-      <textarea id="data-modal-ta" spellcheck="false"></textarea>
+      <div id="data-modal-tabs" style="display:flex;gap:6px;margin-bottom:4px;">
+        <button id="tab-json" class="data-btn" style="font-size: 12px; opacity: 0.5;" onclick="switchDataTab('json')">📋 JSON</button>
+        <button id="tab-html" class="data-btn" style="font-size: 12px; opacity: 1;" onclick="switchDataTab('html')">📄 페이지로 내보내기</button>
+      </div>
+      <span class="data-modal-note" id="data-modal-note">아래 JSON을 복사하여 보관하세요. Import로 다시 불러올 수 있습니다.</span>
+      <textarea id="data-modal-ta" spellcheck="false" readonly=""></textarea>
     </div>
     <div class="data-modal-footer">
       <button class="btn-cancel" onclick="closeDataModal()">닫기</button>
-      <button class="btn-submit" id="data-modal-action">복사</button>
+      <button class="btn-submit" id="data-modal-action">📋 복사</button>
     </div>
   </div>
 </div>
@@ -1654,16 +1695,16 @@ tbody tr:hover {
         <div class="modal-left-fields">
           <div class="mfield">
             <label for="d-name">End customer</label>
-            <input id="d-name" type="text" placeholder="케이스 내용" />
+            <input id="d-name" type="text" placeholder="케이스 내용">
           </div>
           <div class="mfield">
             <label for="d-opn">OPN</label>
-            <input id="d-opn" type="text" placeholder="OPN 입력" />
+            <input id="d-opn" type="text" placeholder="OPN 입력">
           </div>
           <div class="modal-row">
             <div class="mfield">
               <label for="d-assignee">담당자</label>
-              <input id="d-assignee" type="text" placeholder="이름" />
+              <input id="d-assignee" type="text" placeholder="이름">
             </div>
             <div class="mfield">
               <label for="d-prio">우선순위</label>
@@ -1680,20 +1721,20 @@ tbody tr:hover {
             <div class="mfield">
               <label>상태</label>
               <div class="status-toggle">
-                <button type="button" class="stoggle" id="d-stoggle-open"  onclick="setDetailStatus('open')">Open</button>
+                <button type="button" class="stoggle" id="d-stoggle-open" onclick="setDetailStatus('open')">Open</button>
                 <button type="button" class="stoggle" id="d-stoggle-close" onclick="setDetailStatus('close')">Close</button>
               </div>
-              <input type="hidden" id="d-status" value="open" />
+              <input type="hidden" id="d-status" value="open">
             </div>
             <div class="mfield">
               <label for="d-due">SFDC Open date</label>
-              <input id="d-due" type="date" />
+              <input id="d-due" type="date">
             </div>
           </div>
           <div class="modal-row">
             <div class="mfield">
               <label for="d-issues">Returned Units</label>
-              <input id="d-issues" type="number" min="0" />
+              <input id="d-issues" type="number" min="0">
             </div>
             <div class="mfield">
               <label>진척도</label>
@@ -1724,11 +1765,11 @@ tbody tr:hover {
           <div class="modal-row">
             <div class="mfield">
               <label for="d-fail-rate">Fail rate (%)</label>
-              <input id="d-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+              <input id="d-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00">
             </div>
             <div class="mfield">
               <label for="d-failure-mode">Failure mode</label>
-              <input id="d-failure-mode" type="text" placeholder="e.g. Short circuit" />
+              <input id="d-failure-mode" type="text" placeholder="e.g. Short circuit">
             </div>
           </div>
         </div>
@@ -1737,7 +1778,7 @@ tbody tr:hover {
           <div class="modal-right-top">
             <div class="mfield">
               <label for="d-return-date">Units return date</label>
-              <input id="d-return-date" type="date" oninput="onReturnDateChange('d-return-date','d')" />
+              <input id="d-return-date" type="date" oninput="onReturnDateChange('d-return-date','d')">
             </div>
           </div>
           <div class="target-gantt-row">
@@ -1752,43 +1793,43 @@ tbody tr:hover {
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Initial report</span>
-                <input type="date" class="tdate-actual" id="d-ta-initial" />
+                <input type="date" class="tdate-actual" id="d-ta-initial">
                 <span class="tdate-offset">+1 wd</span>
                 <span class="tdate-val empty" id="d-td-initial">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (1) report</span>
-                <input type="date" class="tdate-actual" id="d-ta-i1" />
+                <input type="date" class="tdate-actual" id="d-ta-i1">
                 <span class="tdate-offset">+2 wd</span>
                 <span class="tdate-val empty" id="d-td-i1">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (2) report</span>
-                <input type="date" class="tdate-actual" id="d-ta-i2" />
+                <input type="date" class="tdate-actual" id="d-ta-i2">
                 <span class="tdate-offset">+6 wd</span>
                 <span class="tdate-val empty" id="d-td-i2">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (3) report</span>
-                <input type="date" class="tdate-actual" id="d-ta-i3" />
+                <input type="date" class="tdate-actual" id="d-ta-i3">
                 <span class="tdate-offset">+8 wd</span>
                 <span class="tdate-val empty" id="d-td-i3">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (4) report</span>
-                <input type="date" class="tdate-actual" id="d-ta-i4" />
+                <input type="date" class="tdate-actual" id="d-ta-i4">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="d-td-i4">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Final 4D report</span>
-                <input type="date" class="tdate-actual" id="d-ta-f4d" />
+                <input type="date" class="tdate-actual" id="d-ta-f4d">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="d-td-f4d">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Final 8D report</span>
-                <input type="date" class="tdate-actual" id="d-ta-f8d" />
+                <input type="date" class="tdate-actual" id="d-ta-f8d">
                 <span class="tdate-offset">+16 wd</span>
                 <span class="tdate-val empty" id="d-td-f8d">—</span>
               </div>
@@ -1805,15 +1846,15 @@ tbody tr:hover {
             <label>FA stage</label>
             <div class="stage-group" id="d-stage-group">
               <button type="button" class="stage-btn" data-stage="wait-device" onclick="selectDetailStage(this)">Wait Device</button>
-              <button type="button" class="stage-btn" data-stage="initial"     onclick="selectDetailStage(this)">Initial</button>
-              <button type="button" class="stage-btn" data-stage="interim-1"   onclick="selectDetailStage(this)">Interim (1)</button>
-              <button type="button" class="stage-btn" data-stage="interim-2"   onclick="selectDetailStage(this)">Interim (2)</button>
-              <button type="button" class="stage-btn" data-stage="interim-3"   onclick="selectDetailStage(this)">Interim (3)</button>
-              <button type="button" class="stage-btn" data-stage="interim-4"   onclick="selectDetailStage(this)">Interim (4)</button>
-              <button type="button" class="stage-btn" data-stage="final-4d"    onclick="selectDetailStage(this)">Final 4D</button>
-              <button type="button" class="stage-btn" data-stage="final-8d"    onclick="selectDetailStage(this)">Final 8D</button>
+              <button type="button" class="stage-btn" data-stage="initial" onclick="selectDetailStage(this)">Initial</button>
+              <button type="button" class="stage-btn" data-stage="interim-1" onclick="selectDetailStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn" data-stage="interim-2" onclick="selectDetailStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn" data-stage="interim-3" onclick="selectDetailStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn" data-stage="interim-4" onclick="selectDetailStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn" data-stage="final-4d" onclick="selectDetailStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn" data-stage="final-8d" onclick="selectDetailStage(this)">Final 8D</button>
             </div>
-            <input type="hidden" id="d-stage" value="wait-device" />
+            <input type="hidden" id="d-stage" value="wait-device">
           </div>
         </div>
       </div>
@@ -1836,38 +1877,37 @@ tbody tr:hover {
           <div class="modal-row">
             <div class="mfield">
               <label for="m-id">Case ID</label>
-              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6자리 숫자 입력"
-                oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6자리 숫자 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
               <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">숫자 6자리를 입력해주세요.</span>
             </div>
             <div class="mfield">
               <label for="m-assignee">담당자</label>
-              <input id="m-assignee" type="text" placeholder="이름 입력" />
+              <input id="m-assignee" type="text" placeholder="이름 입력">
             </div>
           </div>
           <div class="mfield">
             <label for="m-name">End customer</label>
-            <input id="m-name" type="text" placeholder="케이스 내용 입력" />
+            <input id="m-name" type="text" placeholder="케이스 내용 입력">
           </div>
           <div class="mfield">
             <label for="m-opn">OPN</label>
-            <input id="m-opn" type="text" placeholder="OPN 입력" />
+            <input id="m-opn" type="text" placeholder="OPN 입력">
           </div>
           <div class="modal-row">
             <div class="mfield">
               <label>상태</label>
               <div class="status-toggle">
-                <button type="button" class="stoggle open-active" id="stoggle-open"  onclick="setStatus('open')">Open</button>
-                <button type="button" class="stoggle"             id="stoggle-close" onclick="setStatus('close')">Close</button>
+                <button type="button" class="stoggle open-active" id="stoggle-open" onclick="setStatus('open')">Open</button>
+                <button type="button" class="stoggle" id="stoggle-close" onclick="setStatus('close')">Close</button>
               </div>
-              <input type="hidden" id="m-status" value="open" />
+              <input type="hidden" id="m-status" value="open">
             </div>
             <div class="mfield">
               <label for="m-prio">우선순위</label>
               <div class="select-wrap">
                 <select id="m-prio">
                   <option value="H">HIGH</option>
-                  <option value="M" selected>MED</option>
+                  <option value="M" selected="">MED</option>
                   <option value="L">LOW</option>
                 </select>
               </div>
@@ -1876,11 +1916,11 @@ tbody tr:hover {
           <div class="modal-row">
             <div class="mfield">
               <label for="m-due">SFDC Open date</label>
-              <input id="m-due" type="date" />
+              <input id="m-due" type="date">
             </div>
             <div class="mfield">
               <label for="m-issues">Returned Units</label>
-              <input id="m-issues" type="number" min="0" value="0" placeholder="0" />
+              <input id="m-issues" type="number" min="0" value="0" placeholder="0">
             </div>
           </div>
           <div class="modal-row">
@@ -1907,11 +1947,11 @@ tbody tr:hover {
           <div class="modal-row">
             <div class="mfield">
               <label for="m-fail-rate">Fail rate (%)</label>
-              <input id="m-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+              <input id="m-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00">
             </div>
             <div class="mfield">
               <label for="m-failure-mode">Failure mode</label>
-              <input id="m-failure-mode" type="text" placeholder="e.g. Short circuit" />
+              <input id="m-failure-mode" type="text" placeholder="e.g. Short circuit">
             </div>
           </div>
         </div>
@@ -1920,7 +1960,7 @@ tbody tr:hover {
           <div class="modal-right-top">
             <div class="mfield">
               <label for="m-return-date">Units return date</label>
-              <input id="m-return-date" type="date" oninput="onReturnDateChange('m-return-date','m')" />
+              <input id="m-return-date" type="date" oninput="onReturnDateChange('m-return-date','m')">
             </div>
           </div>
           <div class="target-gantt-row">
@@ -1935,43 +1975,43 @@ tbody tr:hover {
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Initial report</span>
-                <input type="date" class="tdate-actual" id="m-ta-initial" />
+                <input type="date" class="tdate-actual" id="m-ta-initial">
                 <span class="tdate-offset">+1 wd</span>
                 <span class="tdate-val empty" id="m-td-initial">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (1) report</span>
-                <input type="date" class="tdate-actual" id="m-ta-i1" />
+                <input type="date" class="tdate-actual" id="m-ta-i1">
                 <span class="tdate-offset">+2 wd</span>
                 <span class="tdate-val empty" id="m-td-i1">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (2) report</span>
-                <input type="date" class="tdate-actual" id="m-ta-i2" />
+                <input type="date" class="tdate-actual" id="m-ta-i2">
                 <span class="tdate-offset">+6 wd</span>
                 <span class="tdate-val empty" id="m-td-i2">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (3) report</span>
-                <input type="date" class="tdate-actual" id="m-ta-i3" />
+                <input type="date" class="tdate-actual" id="m-ta-i3">
                 <span class="tdate-offset">+8 wd</span>
                 <span class="tdate-val empty" id="m-td-i3">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (4) report</span>
-                <input type="date" class="tdate-actual" id="m-ta-i4" />
+                <input type="date" class="tdate-actual" id="m-ta-i4">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="m-td-i4">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Final 4D report</span>
-                <input type="date" class="tdate-actual" id="m-ta-f4d" />
+                <input type="date" class="tdate-actual" id="m-ta-f4d">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="m-td-f4d">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Final 8D report</span>
-                <input type="date" class="tdate-actual" id="m-ta-f8d" />
+                <input type="date" class="tdate-actual" id="m-ta-f8d">
                 <span class="tdate-offset">+16 wd</span>
                 <span class="tdate-val empty" id="m-td-f8d">—</span>
               </div>
@@ -1988,15 +2028,15 @@ tbody tr:hover {
             <label>FA stage</label>
             <div class="stage-group" id="stage-group">
               <button type="button" class="stage-btn sel-wait" data-stage="wait-device" onclick="selectStage(this)">Wait Device</button>
-              <button type="button" class="stage-btn"          data-stage="initial"     onclick="selectStage(this)">Initial</button>
-              <button type="button" class="stage-btn"          data-stage="interim-1"   onclick="selectStage(this)">Interim (1)</button>
-              <button type="button" class="stage-btn"          data-stage="interim-2"   onclick="selectStage(this)">Interim (2)</button>
-              <button type="button" class="stage-btn"          data-stage="interim-3"   onclick="selectStage(this)">Interim (3)</button>
-              <button type="button" class="stage-btn"          data-stage="interim-4"   onclick="selectStage(this)">Interim (4)</button>
-              <button type="button" class="stage-btn"          data-stage="final-4d"    onclick="selectStage(this)">Final 4D</button>
-              <button type="button" class="stage-btn"          data-stage="final-8d"    onclick="selectStage(this)">Final 8D</button>
+              <button type="button" class="stage-btn" data-stage="initial" onclick="selectStage(this)">Initial</button>
+              <button type="button" class="stage-btn" data-stage="interim-1" onclick="selectStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn" data-stage="interim-2" onclick="selectStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn" data-stage="interim-3" onclick="selectStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn" data-stage="interim-4" onclick="selectStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn" data-stage="final-4d" onclick="selectStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn" data-stage="final-8d" onclick="selectStage(this)">Final 8D</button>
             </div>
-            <input type="hidden" id="m-stage" value="wait-device" />
+            <input type="hidden" id="m-stage" value="wait-device">
           </div>
         </div>
       </div>
@@ -2016,11 +2056,21 @@ function saveCases() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
 }
 
+/* SEED_CASES — 배포 시 Admin이 내장한 기본 데이터. localStorage 없는 기기의 폴백 */
+const SEED_CASES = /* FT_SEED_START */[{"id":"009777","name":"Insta360","assignee":"RYU","status":"open","stage":"interim-1","prio":"M","due":"06/25","issues":1,"returnDate":"06/29","initialReport":"07/03","actualDates":{"initial":"2026-06-30","i1":"2026-07-01"},"opn":"","area":"APAC","failLocation":"Line","failRate":null,"failureMode":"Device fails to start"},{"id":"009746","name":"HYBUS","opn":"S34ML08G201TFI000","assignee":"RYU","status":"close","stage":"final-4d","prio":"M","due":"05/26","issues":1,"returnDate":"05/26","actualDates":{"initial":"2026-05-27","i1":"2026-05-28","i2":"2026-06-01","i3":"2026-06-08","f4d":"2026-06-15"}}]/* FT_SEED_END */;
+
 function loadCases() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) { const arr = JSON.parse(raw); arr.forEach(c => CASES.push(c)); }
-  } catch(e) {}
+    if (raw) {
+      const arr = JSON.parse(raw);
+      arr.forEach(c => CASES.push(c));
+    } else if (SEED_CASES.length) {
+      SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
+    }
+  } catch(e) {
+    if (SEED_CASES.length) SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
+  }
 }
 
 const CASES = [];
@@ -2400,32 +2450,67 @@ function applyRole() {
   if (logoutBtn) logoutBtn.textContent = isAdmin ? 'Logout' : '← Admin Login';
 }
 
-function openExportModal() {
+function switchDataTab(tab) {
+  document.getElementById('tab-json').style.opacity = tab === 'json' ? '1' : '0.5';
+  document.getElementById('tab-html').style.opacity = tab === 'html' ? '1' : '0.5';
+  if (tab === 'json') {
+    _fillExportJson();
+  } else {
+    _fillExportHtml();
+  }
+}
+
+function _fillExportJson() {
   const data = { version: 'ft_cases_v1', exportedAt: new Date().toISOString(), cases: CASES };
   const json = JSON.stringify(data, null, 2);
-  document.getElementById('data-modal-title').textContent = '⬇ Export — 데이터 내보내기';
-  document.getElementById('data-modal-note').textContent  = '아래 JSON을 복사하여 보관하세요.';
-  document.getElementById('data-modal-ta').value          = json;
-  document.getElementById('data-modal-ta').readOnly       = true;
+  document.getElementById('data-modal-note').textContent = '아래 JSON을 복사하여 보관하세요. Import로 다시 불러올 수 있습니다.';
+  document.getElementById('data-modal-ta').value    = json;
+  document.getElementById('data-modal-ta').readOnly = true;
   const btn = document.getElementById('data-modal-action');
   btn.textContent = '📋 복사';
-  btn.onclick = () => {
-    navigator.clipboard.writeText(json).then(() => {
-      btn.textContent = '✓ 복사됨';
-      setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
-    }).catch(() => {
-      document.getElementById('data-modal-ta').select();
-      document.execCommand('copy');
-      btn.textContent = '✓ 복사됨';
-      setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
-    });
-  };
+  btn.onclick = () => _copyTa(btn);
+}
+
+function _fillExportHtml() {
+  const seedJson = JSON.stringify(CASES);
+  const src = document.documentElement.outerHTML;
+  const updated = src.replace(
+    /\/\* FT_SEED_START \*\/[\s\S]*?\/\* FT_SEED_END \*\//,
+    '/* FT_SEED_START */' + seedJson + '/* FT_SEED_END */'
+  );
+  document.getElementById('data-modal-note').textContent =
+    '현재 케이스 ' + CASES.length + '건이 내장된 HTML입니다. 이 내용을 복사해 index.html로 저장하거나 새 Artifact로 배포하면 다른 기기에서도 동일한 데이터를 볼 수 있습니다.';
+  document.getElementById('data-modal-ta').value    = updated;
+  document.getElementById('data-modal-ta').readOnly = true;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '📋 복사';
+  btn.onclick = () => _copyTa(btn);
+}
+
+function _copyTa(btn) {
+  const ta = document.getElementById('data-modal-ta');
+  navigator.clipboard.writeText(ta.value).then(() => {
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+  }).catch(() => {
+    ta.select();
+    document.execCommand('copy');
+    btn.textContent = '✓ 복사됨';
+    setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+  });
+}
+
+function openExportModal() {
+  document.getElementById('data-modal-title').textContent = '⬇ Export';
+  document.getElementById('data-modal-tabs').style.display = 'flex';
   document.getElementById('data-modal-overlay').classList.add('open');
+  switchDataTab('json');
   setTimeout(() => document.getElementById('data-modal-ta').select(), 50);
 }
 
 function openImportModal() {
   document.getElementById('data-modal-title').textContent = '⬆ Import — 데이터 불러오기';
+  document.getElementById('data-modal-tabs').style.display = 'none';
   document.getElementById('data-modal-note').textContent  = '내보낸 JSON을 아래에 붙여넣고 [불러오기]를 누르세요.';
   document.getElementById('data-modal-ta').value          = '';
   document.getElementById('data-modal-ta').readOnly       = false;
@@ -3349,5 +3434,6 @@ function handleLogin(e) {
 }
 </script>
 
-</body>
-</html>
+
+
+</body></html>
