@@ -1532,7 +1532,7 @@ tbody tr:hover {
 <body>
 
 <!-- LOGIN SCREEN -->
-<div id="login-screen" class="fade-out" style="display: none;">
+<div id="login-screen" style="display: flex;">
   <div class="login-box">
     <div class="login-top">
       <div class="login-sys">QA System</div>
@@ -1557,7 +1557,7 @@ tbody tr:hover {
 </div>
 
 <!-- DASHBOARD WRAPPER -->
-<div id="dashboard" class="visible">
+<div id="dashboard">
 
 <!-- HEADER -->
 <header class="header">
@@ -1571,7 +1571,7 @@ tbody tr:hover {
     <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
     <span id="sync-status"></span>
     <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin 동기화 설정">⚙</button>
-    <div id="data-actions" style="display: flex;">
+    <div id="data-actions">
       <button class="data-btn" onclick="openExportModal()" title="케이스 데이터 내보내기">⬇ Export</button>
       <button class="data-btn" onclick="openImportModal()" title="케이스 데이터 불러오기">⬆ Import</button>
     </div>
