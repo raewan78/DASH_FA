@@ -3004,8 +3004,15 @@ function renderGanttChart(prefix) {
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
   const isClosed = document.getElementById(prefix + '-status')?.value === 'close';
-  const allMs = [base, ...(isClosed ? [] : [today]), ...rows.map(r => r.targetDate),
-    ...rows.filter(r => r.actualDate).map(r => r.actualDate)].map(d => d.getTime());
+  const allMs = [
+    base,
+    ...(isClosed ? [] : [today]),
+    ...(isClosed
+      ? rows.filter(r => r.actualDate || r.actualDate2).map(r => r.targetDate)
+      : rows.map(r => r.targetDate)),
+    ...rows.filter(r => r.actualDate).map(r => r.actualDate),
+    ...rows.filter(r => r.actualDate2).map(r => r.actualDate2),
+  ].map(d => d.getTime());
 
   const dayMs2  = 86400000;
   const padDays2 = 2;
@@ -3028,7 +3035,8 @@ function renderGanttChart(prefix) {
   const toX = d => {
     const k = new Date(d); k.setHours(0,0,0,0);
     const p = posMap2.get(k.getTime());
-    return PL + ((p ?? 0) / totalUnits2) * cW;
+    if (p === undefined) return null;
+    return PL + (p / totalUnits2) * cW;
   };
   const toY = i => PT + ROW_H * i + ROW_H / 2;
 
@@ -3085,13 +3093,13 @@ function renderGanttChart(prefix) {
     const ttx = toX(row.targetDate);
 
     if (row.merged) {
-      // i4 actual → top half of row, f4d actual → bottom half
       [{ ad: row.actualDate, dy: -6 }, { ad: row.actualDate2, dy: 6 }].forEach(({ ad, dy }) => {
         if (!ad) return;
         const ax = toX(ad);
+        if (ax === null) return;
         const lc = ad > row.targetDate ? C.delayed : C.done;
         ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(ax, y + dy); ctx.lineTo(ttx, y + dy); ctx.stroke();
+        if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y + dy); ctx.lineTo(ttx, y + dy); ctx.stroke(); }
         ctx.strokeStyle = lc; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(ax, y + dy, 7, 0, Math.PI * 2); ctx.stroke();
         ctx.fillStyle = lc;
@@ -3100,17 +3108,20 @@ function renderGanttChart(prefix) {
     } else {
       if (row.actualDate) {
         const ax = toX(row.actualDate);
-        const lc = row.actualDate > row.targetDate ? C.delayed : C.done;
-        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke();
-        ctx.strokeStyle = lc; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
-        ctx.fillStyle = lc;
-        ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+        if (ax !== null) {
+          const lc = row.actualDate > row.targetDate ? C.delayed : C.done;
+          ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+          if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke(); }
+          ctx.strokeStyle = lc; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = lc;
+          ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+        }
       }
     }
 
-    /* target diamond */
+    /* target diamond — skip if out of range */
+    if (ttx === null) return;
     const ds = 4;
     ctx.fillStyle = C.accent;
     ctx.beginPath();
