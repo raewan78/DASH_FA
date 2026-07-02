@@ -3399,14 +3399,15 @@ function renderOverallGantt() {
     ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
     ctx.beginPath(); ctx.moveTo(PL, rowAxisY); ctx.lineTo(W - PR, rowAxisY); ctx.stroke();
 
-    let wdToBase = 0;
+    // wd_i = 0 at today (D-0 reference)
+    let wdToToday = 0;
     const cnt = new Date(tickStart);
-    while (cnt.getTime() < row.base.getTime()) {
-      if (isWorkingDay(cnt)) wdToBase++;
+    while (cnt.getTime() < today.getTime()) {
+      if (isWorkingDay(cnt)) wdToToday++;
       cnt.setDate(cnt.getDate() + 1);
     }
 
-    let wd_i = -wdToBase;
+    let wd_i = -wdToToday;
     const cur_i = new Date(tickStart);
     let lastX_i = -999;
 
@@ -3414,14 +3415,14 @@ function renderOverallGantt() {
       if (isWorkingDay(cur_i)) {
         const x = toX(cur_i);
         if (x >= PL && x <= W - PR && x - lastX_i >= 22) {
-          const isD0    = wd_i === 0;
-          const isToday = cur_i.getTime() === today.getTime();
-          const wdLbl   = isToday ? 'D-0' : wd_i === 0 ? 'D+0' : wd_i > 0 ? 'D+' + wd_i : 'D' + wd_i;
-          ctx.strokeStyle = isToday ? C.today : isD0 ? C_arrived : C.border;
-          ctx.lineWidth   = (isToday || isD0) ? 1.5 : 0.5;
+          const isArrived = cur_i.getTime() === row.base.getTime();
+          const isToday   = wd_i === 0;
+          const wdLbl     = wd_i === 0 ? 'D-0' : wd_i > 0 ? 'D+' + wd_i : 'D' + wd_i;
+          ctx.strokeStyle = isToday ? C.today : isArrived ? C_arrived : C.border;
+          ctx.lineWidth   = (isToday || isArrived) ? 1.5 : 0.5;
           ctx.beginPath(); ctx.moveTo(x, rowAxisY); ctx.lineTo(x, rowAxisY + 4); ctx.stroke();
-          ctx.fillStyle = isToday ? C.today : isD0 ? C_arrived : C.muted;
-          ctx.font = (isToday || isD0) ? 'bold 10px sans-serif' : '10px sans-serif';
+          ctx.fillStyle = isToday ? C.today : isArrived ? C_arrived : C.muted;
+          ctx.font = (isToday || isArrived) ? 'bold 10px sans-serif' : '10px sans-serif';
           ctx.textAlign = 'center'; ctx.textBaseline = 'top';
           ctx.fillText(wdLbl, x, rowAxisY + 2);
           lastX_i = x;
