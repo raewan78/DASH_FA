@@ -1204,6 +1204,19 @@ td {
   border-top: 1px solid var(--border);
 }
 
+.btn-delete {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--delayed);
+  background: transparent;
+  color: var(--delayed);
+  cursor: pointer;
+  margin-right: auto;
+}
+.btn-delete:hover { background: var(--delayed-bg); }
+
 .btn-cancel {
   padding: 8px 18px;
   font-size: 12px;
@@ -3614,7 +3627,8 @@ function openDetail(caseId) {
 
   // footer
   document.getElementById('detail-footer').innerHTML = isAdmin
-    ? `<button class="btn-cancel" onclick="closeDetail()">취소</button>
+    ? `<button class="btn-delete" onclick="deleteCurrentCase()">🗑 삭제</button>
+       <button class="btn-cancel" onclick="closeDetail()">취소</button>
        <button class="btn-submit" onclick="saveDetail()">저장</button>`
     : `<button class="btn-submit" onclick="closeDetail()">닫기</button>`;
 
@@ -3624,6 +3638,20 @@ function openDetail(caseId) {
 function closeDetail() {
   document.getElementById('detail-overlay').classList.remove('open');
   detailCaseId = null;
+}
+
+function deleteCurrentCase() {
+  if (!detailCaseId) return;
+  if (!confirm('Case ' + detailCaseId + '을 삭제하시겠습니까?')) return;
+  const idx = CASES.findIndex(c => c.id === detailCaseId);
+  if (idx === -1) return;
+  CASES.splice(idx, 1);
+  saveCases();
+  updateKPIs();
+  buildTable(document.querySelector('.ftab.active')?.dataset.filter || 'all');
+  renderOverallGantt();
+  renderNextActions();
+  closeDetail();
 }
 
 function onDetailOverlay(e) {
