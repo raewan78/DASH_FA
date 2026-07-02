@@ -1718,7 +1718,7 @@ tbody tr:hover {
 </div><!-- /dashboard -->
 
 <!-- EXPORT / IMPORT MODAL -->
-<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()" class="open">
+<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()">
   <div class="data-modal">
     <div class="data-modal-header">
       <span class="data-modal-title" id="data-modal-title">⬇ Export</span>
@@ -2166,7 +2166,10 @@ async function fetchFromJsonBin() {
   const headers = { 'X-Bin-Meta': 'false' };
   if (key) headers['X-Master-Key'] = key;
   try {
-    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers, signal: controller.signal });
+    clearTimeout(timer);
     if (!r.ok) return null;
     const j = await r.json();
     return Array.isArray(j.record) ? j.record : null;
