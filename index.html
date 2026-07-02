@@ -3008,7 +3008,10 @@ function renderGanttChart(prefix) {
   });
 
   const today = getEffectiveToday();
-  const isClosed = document.getElementById(prefix + '-status')?.value === 'close';
+  const _caseStatus = prefix === 'd'
+    ? (CASES.find(c => c.id === detailCaseId)?.status ?? document.getElementById('d-status')?.value)
+    : document.getElementById(prefix + '-status')?.value;
+  const isClosed = _caseStatus === 'close';
   const allMs = [
     base,
     ...(isClosed ? [] : [today]),
