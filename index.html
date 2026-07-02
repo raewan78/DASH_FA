@@ -837,6 +837,26 @@ td {
 
 .logout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
+/* ── EXPORT / IMPORT BUTTONS ────────────────────── */
+.data-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  letter-spacing: .03em;
+}
+.data-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+.data-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#data-actions { display: none; align-items: center; gap: 8px; }
+
 /* ── ADD CASE BUTTON ────────────────────────────── */
 .add-case-row {
   padding: 12px 16px;
@@ -1422,6 +1442,11 @@ tbody tr:hover {
     <span class="live"><span class="live-dot"></span>LIVE</span>
     <span>기준일: 2026-06-30</span>
     <span id="role-tag" style="font-size:10px;font-weight:700;letter-spacing:.1em;"></span>
+    <div id="data-actions">
+      <button class="data-btn" onclick="exportData()" title="케이스 데이터를 JSON 파일로 내보내기">⬇ Export</button>
+      <button class="data-btn" onclick="document.getElementById('import-file').click()" title="JSON 파일에서 케이스 데이터 불러오기">⬆ Import</button>
+      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+    </div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
     <button class="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
@@ -2270,12 +2295,48 @@ let currentUser = null;
 function applyRole() {
   const isAdmin = currentUser && currentUser.role === 'admin';
   document.getElementById('add-case-row').style.display = isAdmin ? '' : 'none';
-  // 헤더에 역할 표시
+  const da = document.getElementById('data-actions');
+  if (da) da.style.display = isAdmin ? 'flex' : 'none';
   const roleTag = document.getElementById('role-tag');
   if (roleTag) {
     roleTag.textContent = isAdmin ? 'ADMIN' : 'VIEW ONLY';
     roleTag.style.color = isAdmin ? 'var(--prio-h)' : 'var(--text-muted)';
   }
+}
+
+function exportData() {
+  const data = { version: 'ft_cases_v1', exportedAt: new Date().toISOString(), cases: CASES };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  const ts   = new Date().toISOString().slice(0,10);
+  a.href = url; a.download = 'ft_cases_' + ts + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      const imported = Array.isArray(parsed) ? parsed
+        : Array.isArray(parsed.cases) ? parsed.cases : null;
+      if (!imported) { alert('올바른 FT Cases JSON 파일이 아닙니다.'); return; }
+      if (!confirm(`${imported.length}건을 불러옵니다. 기존 데이터를 덮어씁니다. 계속할까요?`)) return;
+      CASES.length = 0;
+      imported.forEach(c => CASES.push(c));
+      saveCases();
+      updateKPIs();
+      buildTable('all');
+      renderOverallGantt();
+      renderNextActions();
+    } catch { alert('파일 파싱 오류: 유효한 JSON 파일인지 확인하세요.'); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 /* ── MODAL ──────────────────────────────────────── */
