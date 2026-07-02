@@ -817,11 +817,10 @@ td {
 }
 
 #dashboard {
-  opacity: 0;
-  transition: opacity 0.4s ease;
+  display: none;
 }
 
-#dashboard.visible { opacity: 1; }
+#dashboard.visible { display: block; }
 
 @keyframes fadeOut {
   to { opacity: 0; pointer-events: none; }
@@ -3620,21 +3619,18 @@ function saveDetail() {
 }
 
 /* ── LOGOUT / LOGIN ─────────────────────────────── */
-function enterDashboard() {
+async function enterDashboard() {
   const screen = document.getElementById('login-screen');
   const dash   = document.getElementById('dashboard');
-  screen.classList.add('fade-out');
+  screen.style.display = 'none';
   dash.classList.add('visible');
-  screen.addEventListener('animationend', async () => {
-    screen.style.display = 'none';
-    await loadCases();
-    applyRole();
-    initTheme();
-    updateKPIs();
-    buildTable();
-    requestAnimationFrame(animateDonut);
-    setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
-  }, { once: true });
+  await loadCases();
+  applyRole();
+  initTheme();
+  updateKPIs();
+  buildTable();
+  requestAnimationFrame(animateDonut);
+  setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
 }
 
 function enterAsGuest() {
@@ -3648,7 +3644,6 @@ function handleLogout() {
   const dash   = document.getElementById('dashboard');
   dash.classList.remove('visible');
   screen.style.display = 'flex';
-  screen.classList.remove('fade-out');
   document.getElementById('inp-id').value = '';
   document.getElementById('inp-pw').value = '';
   document.getElementById('login-error').classList.remove('visible');
