@@ -2245,28 +2245,35 @@ const SEED_CASES = /* FT_SEED_START */[{"id":"009777","name":"Insta360","assigne
 async function loadCases() {
   // 1) Try JSONBin cloud (works for all devices without login)
   const binId = getBinId();
+  console.log('[loadCases] binId:', binId);
   if (binId) {
     setSyncStatus('syncing', '↓ Loading…');
     const cloud = await fetchFromJsonBin();
+    console.log('[loadCases] cloud:', cloud, 'length:', cloud && cloud.length);
     if (cloud && cloud.length) {
       cloud.forEach(c => CASES.push(c));
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
       setSyncStatus('ok', '✓ Synced');
       setTimeout(() => setSyncStatus('', ''), 3000);
+      console.log('[loadCases] ✓ JSONBin 로드 완료, cases:', CASES.length);
       return;
     }
+    console.log('[loadCases] JSONBin 실패 → localStorage 폴백');
     setSyncStatus('', '');
   }
   // 2) Fallback: localStorage
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
+    console.log('[loadCases] localStorage raw length:', raw && raw.length);
     if (raw) {
       const arr = JSON.parse(raw);
       arr.forEach(c => CASES.push(c));
+      console.log('[loadCases] ✓ localStorage 로드 완료, cases:', CASES.length);
       return;
     }
   } catch(e) {}
   // 3) Fallback: embedded SEED_CASES
+  console.log('[loadCases] SEED_CASES 폴백');
   if (SEED_CASES.length) SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
 }
 
