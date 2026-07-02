@@ -871,6 +871,66 @@ td {
 .data-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
 .data-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #data-actions { display: none; align-items: center; gap: 8px; }
+#sync-status { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: var(--text-muted); white-space: nowrap; display: none; }
+#sync-status.syncing { color: var(--accent); }
+#sync-status.ok      { color: #4caf50; }
+#sync-status.err     { color: var(--prio-h); }
+.settings-btn { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 3px 7px; display: none; }
+.settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── SETTINGS MODAL ─────────────────────────────── */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2100;
+  align-items: center;
+  justify-content: center;
+}
+#settings-overlay.open { display: flex; }
+.settings-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: min(460px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.settings-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.settings-field { display: flex; flex-direction: column; gap: 5px; }
+.settings-field label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+.settings-field input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 7px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: monospace;
+}
+.settings-field input:focus { outline: none; border-color: var(--accent); }
+.settings-hint { font-size: 10px; color: var(--text-muted); }
+.settings-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+#jb-test-result { font-size: 11px; margin-top: 4px; min-height: 14px; }
 
 /* ── DATA MODAL ─────────────────────────────────── */
 #data-modal-overlay {
@@ -1509,6 +1569,8 @@ tbody tr:hover {
     <span class="live"><span class="live-dot"></span>LIVE</span>
     <span>기준일: 2026-06-30</span>
     <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
+    <span id="sync-status"></span>
+    <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin 동기화 설정">⚙</button>
     <div id="data-actions" style="display: flex;">
       <button class="data-btn" onclick="openExportModal()" title="케이스 데이터 내보내기">⬇ Export</button>
       <button class="data-btn" onclick="openImportModal()" title="케이스 데이터 불러오기">⬆ Import</button>
@@ -1674,6 +1736,36 @@ tbody tr:hover {
     <div class="data-modal-footer">
       <button class="btn-cancel" onclick="closeDataModal()">닫기</button>
       <button class="btn-submit" id="data-modal-action">📋 복사</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL (admin only) -->
+<div id="settings-overlay" onclick="if(event.target===this)closeSettingsModal()">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <span class="settings-modal-title">⚙ JSONBin 동기화 설정</span>
+      <button class="modal-close" onclick="closeSettingsModal()">×</button>
+    </div>
+    <div class="settings-modal-body">
+      <div class="settings-field">
+        <label>Master Key (X-Master-Key)</label>
+        <input type="password" id="jb-api-key" placeholder="$2a$10$..." autocomplete="off">
+        <span class="settings-hint">jsonbin.io → Account → API Keys — 이 기기에만 저장됩니다.</span>
+      </div>
+      <div class="settings-field">
+        <label>Bin ID</label>
+        <input type="text" id="jb-bin-id" placeholder="67a1b2c3d4e5f6..." autocomplete="off">
+        <span class="settings-hint">새 Bin을 만들면 ID가 주어집니다. 비워두면 자동 생성합니다.</span>
+      </div>
+      <div>
+        <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 연결 테스트</button>
+        <div id="jb-test-result"></div>
+      </div>
+    </div>
+    <div class="settings-modal-footer">
+      <button class="btn-cancel" onclick="closeSettingsModal()">취소</button>
+      <button class="btn-submit" onclick="saveJbSettings()">저장 &amp; 동기화</button>
     </div>
   </div>
 </div>
@@ -2049,28 +2141,105 @@ tbody tr:hover {
 </div>
 
 <script>
-/* ── DATA (localStorage 저장) ───────────────────── */
+/* ── DATA (localStorage + JSONBin cloud sync) ───── */
 const STORAGE_KEY = 'ft_cases_v1';
+const JB_KEY_STORE = 'ft_jb_key';
+const JB_BIN_STORE = 'ft_jb_bin';
+const JSONBIN_BIN_ID = /* FT_JB_BIN_START */''/* FT_JB_BIN_END */;
+
+function getJbKey() { return localStorage.getItem(JB_KEY_STORE) || ''; }
+function getBinId()  {
+  return localStorage.getItem(JB_BIN_STORE) || JSONBIN_BIN_ID || '';
+}
+
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = state; // '', 'syncing', 'ok', 'err'
+  el.style.display = msg ? '' : 'none';
+}
+
+async function fetchFromJsonBin() {
+  const binId = getBinId();
+  if (!binId) return null;
+  const key = getJbKey();
+  const headers = { 'X-Bin-Meta': 'false' };
+  if (key) headers['X-Master-Key'] = key;
+  try {
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
+    if (!r.ok) return null;
+    const j = await r.json();
+    return Array.isArray(j.record) ? j.record : null;
+  } catch(e) { return null; }
+}
+
+async function pushToJsonBin(data) {
+  const key = getJbKey();
+  if (!key) return;
+  let binId = getBinId();
+  try {
+    setSyncStatus('syncing', '↑ Syncing…');
+    if (binId) {
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) throw new Error('PUT ' + r.status);
+    } else {
+      const r = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'ft-cases', 'X-Bin-Private': 'false' },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) throw new Error('POST ' + r.status);
+      const j = await r.json();
+      const newId = j.metadata?.id;
+      if (newId) { localStorage.setItem(JB_BIN_STORE, newId); }
+    }
+    setSyncStatus('ok', '✓ Synced');
+    setTimeout(() => setSyncStatus('', ''), 3000);
+  } catch(e) {
+    setSyncStatus('err', '✗ Sync failed');
+    setTimeout(() => setSyncStatus('', ''), 5000);
+  }
+}
 
 function saveCases() {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
+  pushToJsonBin(CASES);
 }
 
 /* SEED_CASES — 배포 시 Admin이 내장한 기본 데이터. localStorage 없는 기기의 폴백 */
 const SEED_CASES = /* FT_SEED_START */[{"id":"009777","name":"Insta360","assignee":"RYU","status":"open","stage":"interim-1","prio":"M","due":"06/25","issues":1,"returnDate":"06/29","initialReport":"07/03","actualDates":{"initial":"2026-06-30","i1":"2026-07-01"},"opn":"","area":"APAC","failLocation":"Line","failRate":null,"failureMode":"Device fails to start"},{"id":"009746","name":"HYBUS","opn":"S34ML08G201TFI000","assignee":"RYU","status":"close","stage":"final-4d","prio":"M","due":"05/26","issues":1,"returnDate":"05/26","actualDates":{"initial":"2026-05-27","i1":"2026-05-28","i2":"2026-06-01","i3":"2026-06-08","f4d":"2026-06-15"}}]/* FT_SEED_END */;
 
-function loadCases() {
+async function loadCases() {
+  // 1) Try JSONBin cloud (works for all devices without login)
+  const binId = getBinId();
+  if (binId) {
+    setSyncStatus('syncing', '↓ Loading…');
+    const cloud = await fetchFromJsonBin();
+    if (cloud && cloud.length) {
+      cloud.forEach(c => CASES.push(c));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
+      setSyncStatus('ok', '✓ Synced');
+      setTimeout(() => setSyncStatus('', ''), 3000);
+      return;
+    }
+    setSyncStatus('', '');
+  }
+  // 2) Fallback: localStorage
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const arr = JSON.parse(raw);
       arr.forEach(c => CASES.push(c));
-    } else if (SEED_CASES.length) {
-      SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
+      return;
     }
-  } catch(e) {
-    if (SEED_CASES.length) SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
-  }
+  } catch(e) {}
+  // 3) Fallback: embedded SEED_CASES
+  if (SEED_CASES.length) SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
 }
 
 const CASES = [];
@@ -2433,6 +2602,8 @@ function applyRole() {
   document.getElementById('add-case-row').style.display = isAdmin ? '' : 'none';
   const da = document.getElementById('data-actions');
   if (da) da.style.display = isAdmin ? 'flex' : 'none';
+  const sb = document.getElementById('settings-btn');
+  if (sb) sb.style.display = isAdmin ? 'inline-block' : 'none';
   const roleTag = document.getElementById('role-tag');
   if (roleTag) {
     if (isAdmin) {
@@ -2473,13 +2644,21 @@ function _fillExportJson() {
 
 function _fillExportHtml() {
   const seedJson = JSON.stringify(CASES);
+  const currentBinId = getBinId();
   const src = document.documentElement.outerHTML;
-  const updated = src.replace(
+  let updated = src.replace(
     /\/\* FT_SEED_START \*\/[\s\S]*?\/\* FT_SEED_END \*\//,
     '/* FT_SEED_START */' + seedJson + '/* FT_SEED_END */'
   );
+  if (currentBinId) {
+    updated = updated.replace(
+      /\/\* FT_JB_BIN_START \*\/[\s\S]*?\/\* FT_JB_BIN_END \*\//,
+      '/* FT_JB_BIN_START */' + JSON.stringify(currentBinId) + '/* FT_JB_BIN_END */'
+    );
+  }
+  const binNote = currentBinId ? ' JSONBin Bin ID(' + currentBinId.slice(0,8) + '…)도 내장되어 자동 동기화됩니다.' : '';
   document.getElementById('data-modal-note').textContent =
-    '현재 케이스 ' + CASES.length + '건이 내장된 HTML입니다. 이 내용을 복사해 index.html로 저장하거나 새 Artifact로 배포하면 다른 기기에서도 동일한 데이터를 볼 수 있습니다.';
+    '현재 케이스 ' + CASES.length + '건이 내장된 HTML입니다. 이 내용을 복사해 index.html로 저장하거나 새 Artifact로 배포하면 다른 기기에서도 동일한 데이터를 볼 수 있습니다.' + binNote;
   document.getElementById('data-modal-ta').value    = updated;
   document.getElementById('data-modal-ta').readOnly = true;
   const btn = document.getElementById('data-modal-action');
@@ -2535,6 +2714,68 @@ function openImportModal() {
 
 function closeDataModal() {
   document.getElementById('data-modal-overlay').classList.remove('open');
+}
+
+/* ── SETTINGS MODAL ─────────────────────────────── */
+function openSettingsModal() {
+  document.getElementById('jb-api-key').value = getJbKey();
+  document.getElementById('jb-bin-id').value  = getBinId();
+  document.getElementById('jb-test-result').textContent = '';
+  document.getElementById('settings-overlay').classList.add('open');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+
+function saveJbSettings() {
+  const key   = document.getElementById('jb-api-key').value.trim();
+  const binId = document.getElementById('jb-bin-id').value.trim();
+  if (key)   localStorage.setItem(JB_KEY_STORE, key);
+  else       localStorage.removeItem(JB_KEY_STORE);
+  if (binId) localStorage.setItem(JB_BIN_STORE, binId);
+  else       localStorage.removeItem(JB_BIN_STORE);
+  closeSettingsModal();
+  pushToJsonBin(CASES);
+}
+
+async function testJbConnection() {
+  const key   = document.getElementById('jb-api-key').value.trim();
+  const binId = document.getElementById('jb-bin-id').value.trim();
+  const res   = document.getElementById('jb-test-result');
+  res.style.color = 'var(--text-muted)';
+  res.textContent = '연결 중…';
+  try {
+    if (binId) {
+      // Test read of existing bin
+      const headers = { 'X-Bin-Meta': 'false' };
+      if (key) headers['X-Master-Key'] = key;
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
+      if (r.ok) {
+        res.style.color = '#4caf50';
+        res.textContent = '✓ 연결 성공! Bin을 읽을 수 있습니다.';
+      } else {
+        res.style.color = 'var(--prio-h)';
+        res.textContent = '✗ 오류 ' + r.status + ' — API Key 또는 Bin ID를 확인하세요.';
+      }
+    } else if (key) {
+      // Test key by listing bins
+      const r = await fetch('https://api.jsonbin.io/v3/b', { headers: { 'X-Master-Key': key } });
+      if (r.ok || r.status === 200) {
+        res.style.color = '#4caf50';
+        res.textContent = '✓ API Key 유효. Bin ID를 입력하거나 저장 시 자동 생성합니다.';
+      } else {
+        res.style.color = 'var(--prio-h)';
+        res.textContent = '✗ API Key 오류 ' + r.status;
+      }
+    } else {
+      res.style.color = 'var(--prio-h)';
+      res.textContent = 'API Key를 먼저 입력하세요.';
+    }
+  } catch(e) {
+    res.style.color = 'var(--prio-h)';
+    res.textContent = '✗ 네트워크 오류: ' + e.message;
+  }
 }
 
 /* ── MODAL ──────────────────────────────────────── */
@@ -3384,9 +3625,9 @@ function enterDashboard() {
   const dash   = document.getElementById('dashboard');
   screen.classList.add('fade-out');
   dash.classList.add('visible');
-  screen.addEventListener('animationend', () => {
+  screen.addEventListener('animationend', async () => {
     screen.style.display = 'none';
-    loadCases();
+    await loadCases();
     applyRole();
     initTheme();
     updateKPIs();
