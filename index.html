@@ -1565,7 +1565,7 @@ tbody tr:hover {
       </div>
       <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
       <button type="submit" class="login-btn">Admin 로그인</button>
-      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 로그인 없이 보기 (View only)</button>
+      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 Guest 접속 (View only)</button>
     </form>
     <div class="login-footer">FT CASE Management &nbsp;·&nbsp; Sprint 3</div>
   </div>
@@ -2400,6 +2400,12 @@ function isWorkingDay(d) {
   return !KR_HOLIDAYS.has(iso);
 }
 
+function getEffectiveToday() {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  while (!isWorkingDay(d)) d.setDate(d.getDate() + 1);
+  return d;
+}
+
 /* ── WORKING DAY CALC ───────────────────────────── */
 const TARGET_OFFSETS = [
   { id: 'td-initial', key: 'initial', n: 1  },
@@ -2510,8 +2516,7 @@ function getTimingStatus(c) {
   if (c.status === 'close') return { label: 'Closed', cls: 't-closed' };
   const target = getNextStageTargetDate(c);
   if (target) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const today = getEffectiveToday();
     const diff = Math.round((today - target) / 86400000);
     if (diff === 0) return { label: 'On time',              cls: 't-ontime' };
     if (diff > 0)  return { label: 'Delay (+' + diff + 'd)', cls: 't-delay'  };
@@ -3002,7 +3007,7 @@ function renderGanttChart(prefix) {
     merged: true,
   });
 
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = getEffectiveToday();
   const isClosed = document.getElementById(prefix + '-status')?.value === 'close';
   const allMs = [
     base,
@@ -3225,7 +3230,7 @@ function renderOverallGantt() {
   }
 
   const yr = new Date().getFullYear();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = getEffectiveToday();
 
   /* show up to F-4D by default; extend to F-8D only if any case is at Interim(4)+ */
   const STAGES_NEED_F8D = new Set(['interim-4', 'final-4d', 'final-8d']);
@@ -3458,7 +3463,7 @@ const STAGE_NEXT = {
   'interim-1':   { key: 'i2',      label: 'Interim (2)'  },
   'interim-2':   { key: 'i3',      label: 'Interim (3)'  },
   'interim-3':   { key: 'i4',      label: 'Interim (4)'  },
-  'interim-4':   { key: 'f4d',     label: 'Final 4D'     },
+  'interim-4':   { key: 'f8d',     label: 'Final 8D'     },
   'final-4d':    { key: 'f8d',     label: 'Final 8D'     },
 };
 
@@ -3472,7 +3477,7 @@ function renderNextActions() {
   if (!wrap) return;
 
   const yr    = new Date().getFullYear();
-  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const today = getEffectiveToday();
 
   const rows = CASES
     .filter(c => c.status === 'open' && c.returnDate && STAGE_NEXT[c.stage])
