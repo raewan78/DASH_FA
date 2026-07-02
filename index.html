@@ -364,11 +364,6 @@ td {
   white-space: nowrap;
 }
 
-.td-assignee {
-  font-size: 12px;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
 
 .td-date {
   font-size: 12px;
@@ -1144,6 +1139,17 @@ td {
   -webkit-appearance: none;
 }
 
+.mfield input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
 .mfield input::placeholder { color: var(--text-muted); }
 
 .mfield input:focus,
@@ -1684,7 +1690,6 @@ tbody tr:hover {
             <tr>
               <th>Case</th>
               <th>End customer</th>
-              <th>Operator</th>
               <th>Status</th>
               <th>Priority</th>
               <th>FA stage</th>
@@ -1696,7 +1701,6 @@ tbody tr:hover {
           <tbody id="ft-body"><tr onclick="openDetail('009777')" title="Click for details">
       <td class="td-id">009777</td>
       <td class="td-name">Insta360</td>
-      <td class="td-assignee">RYU</td>
       <td><span class="pill s-progress"><span class="pill-dot"></span>Open</span></td>
       <td><span class="prio p-m">MED</span></td>
       <td><span class="sbadge sb-i123">Interim (1)</span></td>
@@ -1706,7 +1710,6 @@ tbody tr:hover {
     </tr><tr onclick="openDetail('009746')" title="Click for details">
       <td class="td-id">009746</td>
       <td class="td-name">HYBUS</td>
-      <td class="td-assignee">RYU</td>
       <td><span class="pill s-done"><span class="pill-dot"></span>Close</span></td>
       <td><span class="prio p-m">MED</span></td>
       <td><span class="sbadge sb-f4d">Final 4D</span></td>
@@ -1804,9 +1807,12 @@ tbody tr:hover {
             <input id="d-opn" type="text" placeholder="Enter OPN">
           </div>
           <div class="modal-row">
-            <div class="mfield">
-              <label for="d-assignee">Operator</label>
-              <input id="d-assignee" type="text" placeholder="Name">
+            <div class="mfield" style="flex:0 0 auto;justify-content:flex-start;">
+              <label>&nbsp;</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--accent);white-space:nowrap;">
+                <input type="checkbox" id="d-mcp" onchange="onMcpChange('d')" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                MCP
+              </label>
             </div>
             <div class="mfield">
               <label for="d-prio">Priority</label>
@@ -1895,41 +1901,41 @@ tbody tr:hover {
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Initial report</span>
-                <input type="date" class="tdate-actual" id="d-ta-initial">
-                <span class="tdate-offset">+1 wd</span>
+                <input type="date" class="tdate-actual" id="d-ta-initial" onchange="onInitialActualChange('d')">
+                <span class="tdate-offset" id="d-offset-initial">+1 wd</span>
                 <span class="tdate-val empty" id="d-td-initial">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (1) report</span>
                 <input type="date" class="tdate-actual" id="d-ta-i1">
-                <span class="tdate-offset">+2 wd</span>
+                <span class="tdate-offset" id="d-offset-i1">+2 wd</span>
                 <span class="tdate-val empty" id="d-td-i1">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (2) report</span>
                 <input type="date" class="tdate-actual" id="d-ta-i2">
-                <span class="tdate-offset">+6 wd</span>
+                <span class="tdate-offset" id="d-offset-i2">+6 wd</span>
                 <span class="tdate-val empty" id="d-td-i2">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="d-trow-i3">
                 <span class="tdate-label">Interim (3) report</span>
                 <input type="date" class="tdate-actual" id="d-ta-i3">
                 <span class="tdate-offset">+8 wd</span>
                 <span class="tdate-val empty" id="d-td-i3">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="d-trow-i4">
                 <span class="tdate-label">Interim (4) report</span>
                 <input type="date" class="tdate-actual" id="d-ta-i4">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="d-td-i4">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="d-trow-f4d">
                 <span class="tdate-label">Final 4D report</span>
                 <input type="date" class="tdate-actual" id="d-ta-f4d">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="d-td-f4d">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="d-trow-f8d">
                 <span class="tdate-label">Final 8D report</span>
                 <input type="date" class="tdate-actual" id="d-ta-f8d">
                 <span class="tdate-offset">+16 wd</span>
@@ -1982,9 +1988,12 @@ tbody tr:hover {
               <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="Enter 6-digit number" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
               <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">Please enter a 6-digit number.</span>
             </div>
-            <div class="mfield">
-              <label for="m-assignee">Operator</label>
-              <input id="m-assignee" type="text" placeholder="Enter name">
+            <div class="mfield" style="flex:0 0 auto;justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--accent);white-space:nowrap;">
+                <input type="checkbox" id="m-mcp" onchange="onMcpChange('m')" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                MCP
+              </label>
             </div>
           </div>
           <div class="mfield">
@@ -2077,41 +2086,41 @@ tbody tr:hover {
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Initial report</span>
-                <input type="date" class="tdate-actual" id="m-ta-initial">
-                <span class="tdate-offset">+1 wd</span>
+                <input type="date" class="tdate-actual" id="m-ta-initial" onchange="onInitialActualChange('m')">
+                <span class="tdate-offset" id="m-offset-initial">+1 wd</span>
                 <span class="tdate-val empty" id="m-td-initial">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (1) report</span>
                 <input type="date" class="tdate-actual" id="m-ta-i1">
-                <span class="tdate-offset">+2 wd</span>
+                <span class="tdate-offset" id="m-offset-i1">+2 wd</span>
                 <span class="tdate-val empty" id="m-td-i1">—</span>
               </div>
               <div class="tdate-row">
                 <span class="tdate-label">Interim (2) report</span>
                 <input type="date" class="tdate-actual" id="m-ta-i2">
-                <span class="tdate-offset">+6 wd</span>
+                <span class="tdate-offset" id="m-offset-i2">+6 wd</span>
                 <span class="tdate-val empty" id="m-td-i2">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="m-trow-i3">
                 <span class="tdate-label">Interim (3) report</span>
                 <input type="date" class="tdate-actual" id="m-ta-i3">
                 <span class="tdate-offset">+8 wd</span>
                 <span class="tdate-val empty" id="m-td-i3">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="m-trow-i4">
                 <span class="tdate-label">Interim (4) report</span>
                 <input type="date" class="tdate-actual" id="m-ta-i4">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="m-td-i4">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="m-trow-f4d">
                 <span class="tdate-label">Final 4D report</span>
                 <input type="date" class="tdate-actual" id="m-ta-f4d">
                 <span class="tdate-offset">+13 wd</span>
                 <span class="tdate-val empty" id="m-td-f4d">—</span>
               </div>
-              <div class="tdate-row">
+              <div class="tdate-row" id="m-trow-f8d">
                 <span class="tdate-label">Final 8D report</span>
                 <input type="date" class="tdate-actual" id="m-ta-f8d">
                 <span class="tdate-offset">+16 wd</span>
@@ -2443,8 +2452,78 @@ function renderTargetDates(prefix, dateStr) {
 
 function onReturnDateChange(inputId, prefix) {
   const val = document.getElementById(inputId).value;
-  renderTargetDates(prefix, val || '');
+  const isMcp = document.getElementById(prefix + '-mcp')?.checked;
+  if (isMcp) {
+    // MCP: only initial target uses return date
+    const initEl = document.getElementById(prefix + '-td-initial');
+    if (initEl) {
+      if (val) { initEl.textContent = addWorkingDays(val, 1); initEl.classList.remove('empty'); }
+      else     { initEl.textContent = '—'; initEl.classList.add('empty'); }
+    }
+  } else {
+    renderTargetDates(prefix, val || '');
+  }
   renderGanttChart(prefix);
+}
+
+function onMcpChange(prefix) {
+  const isMcp = document.getElementById(prefix + '-mcp').checked;
+  const hiddenKeys = ['i3','i4','f4d','f8d'];
+
+  // Show/hide target date rows
+  hiddenKeys.forEach(key => {
+    const row = document.getElementById(prefix + '-trow-' + key);
+    if (row) row.style.display = isMcp ? 'none' : '';
+  });
+
+  // Show/hide FA stage buttons
+  const stageGroupId = prefix === 'd' ? 'd-stage-group' : 'stage-group';
+  const mcpHideStages = ['interim-3','interim-4','final-4d','final-8d'];
+  document.querySelectorAll(`#${stageGroupId} .stage-btn`).forEach(btn => {
+    if (mcpHideStages.includes(btn.dataset.stage)) {
+      btn.style.display = isMcp ? 'none' : '';
+    }
+  });
+
+  // Update offset labels
+  const o1 = document.getElementById(prefix + '-offset-i1');
+  const o2 = document.getElementById(prefix + '-offset-i2');
+  if (o1) o1.textContent = isMcp ? '+4 wd*' : '+2 wd';
+  if (o2) o2.textContent = isMcp ? '+7 wd*' : '+6 wd';
+
+  const initOffsetEl = document.getElementById(prefix + '-offset-initial');
+  if (initOffsetEl) initOffsetEl.style.visibility = isMcp ? 'hidden' : '';
+
+  if (isMcp) {
+    const initEl = document.getElementById(prefix + '-td-initial');
+    if (initEl) { initEl.textContent = '—'; initEl.classList.add('empty'); }
+    renderMcpInterimTargets(prefix);
+  } else {
+    const returnDate = document.getElementById(prefix + '-return-date')?.value || '';
+    renderTargetDates(prefix, returnDate);
+  }
+  renderGanttChart(prefix);
+}
+
+function renderMcpInterimTargets(prefix) {
+  const initialActual = document.getElementById(prefix + '-ta-initial')?.value || '';
+  const i1El = document.getElementById(prefix + '-td-i1');
+  const i2El = document.getElementById(prefix + '-td-i2');
+  if (i1El) {
+    if (initialActual) { i1El.textContent = addWorkingDays(initialActual, 4); i1El.classList.remove('empty'); }
+    else               { i1El.textContent = '—'; i1El.classList.add('empty'); }
+  }
+  if (i2El) {
+    if (initialActual) { i2El.textContent = addWorkingDays(initialActual, 7); i2El.classList.remove('empty'); }
+    else               { i2El.textContent = '—'; i2El.classList.add('empty'); }
+  }
+}
+
+function onInitialActualChange(prefix) {
+  if (document.getElementById(prefix + '-mcp')?.checked) {
+    renderMcpInterimTargets(prefix);
+    renderGanttChart(prefix);
+  }
 }
 
 function loadActualDates(prefix, actualDates) {
@@ -2541,7 +2620,6 @@ function buildTable(filter = 'all') {
     tr.innerHTML = `
       <td class="td-id">${c.id}</td>
       <td class="td-name">${c.name}</td>
-      <td class="td-assignee">${c.assignee}</td>
       <td><span class="pill ${sm.cls}"><span class="pill-dot"></span>${sm.label}</span></td>
       <td><span class="prio ${pm.cls}">${pm.label}</span></td>
       <td><span class="sbadge ${sg.cls}">${sg.label}</span></td>
@@ -2858,7 +2936,8 @@ function openModal() {
   document.getElementById('m-id').value          = '';
   document.getElementById('m-name').value        = '';
   document.getElementById('m-opn').value         = '';
-  document.getElementById('m-assignee').value    = '';
+  document.getElementById('m-mcp').checked       = false;
+  onMcpChange('m');
   document.getElementById('m-prio').value        = 'M';
   document.getElementById('m-due').value         = '';
   document.getElementById('m-issues').value      = '0';
@@ -2893,7 +2972,6 @@ function onOverlayClick(e) {
 function submitCase() {
   const caseId   = document.getElementById('m-id').value.trim();
   const name     = document.getElementById('m-name').value.trim();
-  const assignee = document.getElementById('m-assignee').value.trim();
   const due      = document.getElementById('m-due').value;
   const idErr    = document.getElementById('m-id-error');
 
@@ -2903,16 +2981,14 @@ function submitCase() {
     return;
   }
   idErr.style.display = 'none';
-  if (!name)     { document.getElementById('m-name').focus();     return; }
-  if (!assignee) { document.getElementById('m-assignee').focus(); return; }
-  if (!due)      { document.getElementById('m-due').focus();      return; }
+  if (!name) { document.getElementById('m-name').focus(); return; }
+  if (!due)  { document.getElementById('m-due').focus();  return; }
 
   const [, mo, d] = due.split('-');
   CASES.push({
     id:       caseId,
     name,
     opn:      document.getElementById('m-opn').value.trim(),
-    assignee,
     status:   document.getElementById('m-status').value,
     stage:    document.getElementById('m-stage').value,
     prio:     document.getElementById('m-prio').value,
@@ -2924,6 +3000,7 @@ function submitCase() {
     failureMode:   document.getElementById('m-failure-mode').value.trim(),
     returnDate:    (() => { const v = document.getElementById('m-return-date').value; if (!v) return ''; const [,rm,rd] = v.split('-'); return rm+'/'+rd; })(),
     actualDates:   readActualDates('m'),
+    mcpFlag:       document.getElementById('m-mcp').checked,
   });
 
   saveCases();
@@ -2955,7 +3032,8 @@ function renderGanttChart(prefix) {
   const W   = canvas.parentElement.clientWidth || 420;
   const PL = 72, PR = 16, PT = 18, PB = 38;
   const ROW_H = 30;
-  const H   = PT + PB + 6 * ROW_H;
+  const isMcp = !!document.getElementById(prefix + '-mcp')?.checked;
+  const H   = PT + PB + (isMcp ? 3 : 6) * ROW_H;
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   canvas.width  = W * DPR;
   canvas.height = H * DPR;
@@ -2984,28 +3062,46 @@ function renderGanttChart(prefix) {
   }
 
   const base = new Date(returnVal + 'T00:00:00'); base.setHours(0,0,0,0);
-  const rawRows = TARGET_OFFSETS.map(({ id, key, n }) => {
-    const td = new Date(base);
+
+  const _addWd = (refDate, n) => {
+    if (!refDate) return null;
+    const td = new Date(refDate); td.setHours(0,0,0,0);
     let added = 0;
     while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
-    td.setHours(0, 0, 0, 0);
+    td.setHours(0,0,0,0);
+    return td;
+  };
+  const _getActual = key => {
     const av = document.getElementById(prefix + '-ta-' + key)?.value;
-    const ad = av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
-    return { key, label: GANTT_LABELS[key], targetDate: td, actualDate: ad };
-  });
-  // merge i4 + f4d into one row (share same +13 WD target)
-  const i4row  = rawRows.find(r => r.key === 'i4');
-  const f4drow = rawRows.find(r => r.key === 'f4d');
-  const rows = rawRows
-    .filter(r => r.key !== 'i4' && r.key !== 'f4d');
-  const f8dIdx = rows.findIndex(r => r.key === 'f8d');
-  rows.splice(f8dIdx, 0, {
-    key: 'i4_f4d', label: 'I(4) / F-4D',
-    targetDate: i4row.targetDate,
-    actualDate:  i4row.actualDate,
-    actualDate2: f4drow ? f4drow.actualDate : null,
-    merged: true,
-  });
+    return av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+  };
+
+  let rows;
+  if (isMcp) {
+    const initActualVal = document.getElementById(prefix + '-ta-initial')?.value || '';
+    const initActual = initActualVal ? new Date(initActualVal + 'T00:00:00') : null;
+    if (initActual) initActual.setHours(0,0,0,0);
+    rows = [
+      { key: 'initial', label: 'Initial',     targetDate: null,                  actualDate: _getActual('initial') },
+      { key: 'i1',      label: 'Interim (1)', targetDate: _addWd(initActual, 4), actualDate: _getActual('i1') },
+      { key: 'i2',      label: 'Interim (2)', targetDate: _addWd(initActual, 7), actualDate: _getActual('i2') },
+    ];
+  } else {
+    const rawRows = TARGET_OFFSETS.map(({ key, n }) => ({
+      key, label: GANTT_LABELS[key], targetDate: _addWd(base, n), actualDate: _getActual(key),
+    }));
+    const i4row  = rawRows.find(r => r.key === 'i4');
+    const f4drow = rawRows.find(r => r.key === 'f4d');
+    rows = rawRows.filter(r => r.key !== 'i4' && r.key !== 'f4d');
+    const f8dIdx = rows.findIndex(r => r.key === 'f8d');
+    rows.splice(f8dIdx, 0, {
+      key: 'i4_f4d', label: 'I(4) / F-4D',
+      targetDate: i4row.targetDate,
+      actualDate:  i4row.actualDate,
+      actualDate2: f4drow ? f4drow.actualDate : null,
+      merged: true,
+    });
+  }
 
   const today = getEffectiveToday();
   const _caseStatus = prefix === 'd'
@@ -3016,8 +3112,8 @@ function renderGanttChart(prefix) {
     base,
     ...(isClosed ? [] : [today]),
     ...(isClosed
-      ? rows.filter(r => r.actualDate || r.actualDate2).map(r => r.targetDate)
-      : rows.map(r => r.targetDate)),
+      ? rows.filter(r => r.targetDate && (r.actualDate || r.actualDate2)).map(r => r.targetDate)
+      : rows.filter(r => r.targetDate).map(r => r.targetDate)),
     ...rows.filter(r => r.actualDate).map(r => r.actualDate),
     ...rows.filter(r => r.actualDate2).map(r => r.actualDate2),
   ].map(d => d.getTime());
@@ -3039,7 +3135,7 @@ function renderGanttChart(prefix) {
   const totalUnits2 = cumPos2 || 1;
 
   const cW  = W - PL - PR;
-  const axisY = PT + 6 * ROW_H;
+  const axisY = PT + rows.length * ROW_H;
   const toX = d => {
     const k = new Date(d); k.setHours(0,0,0,0);
     const p = posMap2.get(k.getTime());
@@ -3098,14 +3194,14 @@ function renderGanttChart(prefix) {
   /* stage data */
   rows.forEach((row, i) => {
     const y   = toY(i);
-    const ttx = toX(row.targetDate);
+    const ttx = row.targetDate ? toX(row.targetDate) : null;
 
     if (row.merged) {
       [{ ad: row.actualDate, dy: -6 }, { ad: row.actualDate2, dy: 6 }].forEach(({ ad, dy }) => {
         if (!ad) return;
         const ax = toX(ad);
         if (ax === null) return;
-        const lc = ad > row.targetDate ? C.delayed : C.done;
+        const lc = (row.targetDate && ad > row.targetDate) ? C.delayed : C.done;
         ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
         if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y + dy); ctx.lineTo(ttx, y + dy); ctx.stroke(); }
         ctx.strokeStyle = lc; ctx.lineWidth = 2;
@@ -3117,7 +3213,7 @@ function renderGanttChart(prefix) {
       if (row.actualDate) {
         const ax = toX(row.actualDate);
         if (ax !== null) {
-          const lc = row.actualDate > row.targetDate ? C.delayed : C.done;
+          const lc = (row.targetDate && row.actualDate > row.targetDate) ? C.delayed : C.done;
           ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
           if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke(); }
           ctx.strokeStyle = lc; ctx.lineWidth = 2;
@@ -3140,7 +3236,7 @@ function renderGanttChart(prefix) {
 
   /* x-axis: ticks for every working day; D+N relative to today (open) or arrived (closed) */
   const targetMsSet = new Set();
-  rows.forEach(row => { if (toX(row.targetDate) !== null) targetMsSet.add(row.targetDate.getTime()); });
+  rows.forEach(row => { if (row.targetDate && toX(row.targetDate) !== null) targetMsSet.add(row.targetDate.getTime()); });
 
   // counter-based D+N: wd_axis = 0 at reference point (today for open, arrived for closed)
   const axisRef = isClosed ? base : today;
@@ -3242,15 +3338,38 @@ function renderOverallGantt() {
     const [mm, dd] = c.returnDate.split('/');
     const base = new Date(`${yr}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
     base.setHours(0, 0, 0, 0);
-    const stages = visibleOffsets.map(({ key, n }) => {
-      const td = new Date(base.getTime());
+
+    const _getAd = key => {
+      const av = c.actualDates && c.actualDates[key];
+      return av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+    };
+    const _addWdG = (ref, n) => {
+      if (!ref) return null;
+      const td = new Date(ref); td.setHours(0,0,0,0);
       let added = 0;
       while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
-      td.setHours(0, 0, 0, 0);
-      const av = c.actualDates && c.actualDates[key];
-      const ad = av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
-      return { key, targetDate: td, actualDate: ad };
-    });
+      td.setHours(0,0,0,0);
+      return td;
+    };
+
+    let stages;
+    if (c.mcpFlag) {
+      const initActualVal = c.actualDates && c.actualDates['initial'];
+      const initActual = initActualVal ? (() => { const d = new Date(initActualVal + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+      stages = [
+        { key: 'initial', targetDate: null,                      actualDate: _getAd('initial') },
+        { key: 'i1',      targetDate: _addWdG(initActual, 4),   actualDate: _getAd('i1') },
+        { key: 'i2',      targetDate: _addWdG(initActual, 7),   actualDate: _getAd('i2') },
+      ];
+    } else {
+      stages = visibleOffsets.map(({ key, n }) => {
+        const td = new Date(base.getTime());
+        let added = 0;
+        while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+        td.setHours(0, 0, 0, 0);
+        return { key, targetDate: td, actualDate: _getAd(key) };
+      });
+    }
     return { id: c.id, base, stages };
   });
 
@@ -3260,7 +3379,7 @@ function renderOverallGantt() {
   caseRows.forEach(r => {
     allMs.push(r.base.getTime());
     r.stages.forEach(s => {
-      allMs.push(s.targetDate.getTime());
+      if (s.targetDate) allMs.push(s.targetDate.getTime());
       if (s.actualDate) allMs.push(s.actualDate.getTime());
     });
   });
@@ -3352,37 +3471,37 @@ function renderOverallGantt() {
   caseRows.forEach((row, i) => {
     const y = toY(i);
     row.stages.forEach((s, si) => {
-      const ttx = toX(s.targetDate);
+      const ttx = s.targetDate ? toX(s.targetDate) : null;
       if (s.actualDate) {
         const ax = toX(s.actualDate);
-        const lc = s.actualDate > s.targetDate ? C.delayed : C.done;
+        const lc = (s.targetDate && s.actualDate > s.targetDate) ? C.delayed : C.done;
         ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
-        ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke();
-        /* outer ring */
+        if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke(); }
         ctx.strokeStyle = lc; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
-        /* filled circle */
         ctx.fillStyle = lc;
         ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
       }
-      const ds = 4;
-      ctx.fillStyle = C.accent;
-      ctx.beginPath();
-      ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
-      ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
-      ctx.closePath(); ctx.fill();
+      if (ttx !== null) {
+        const ds = 4;
+        ctx.fillStyle = C.accent;
+        ctx.beginPath();
+        ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
+        ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
+        ctx.closePath(); ctx.fill();
 
-      /* stage label above diamond — skip if next stage shares same target date */
-      const nextTtx = si < row.stages.length - 1 ? toX(row.stages[si + 1].targetDate) : null;
-      const hiddenByNext = nextTtx !== null && Math.abs(ttx - nextTtx) < 2;
-      if (!hiddenByNext) {
-      ctx.fillStyle = C.pri;
-      ctx.globalAlpha = 0.9;
-      ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(GANTT_SHORT[s.key], ttx, y - ds - 3);
-      ctx.globalAlpha = 1;
+        /* stage label above diamond — skip if next stage shares same target date */
+        const nextTtx = si < row.stages.length - 1 && row.stages[si + 1].targetDate
+          ? toX(row.stages[si + 1].targetDate) : null;
+        const hiddenByNext = nextTtx !== null && Math.abs(ttx - nextTtx) < 2;
+        if (!hiddenByNext) {
+          ctx.fillStyle = C.pri;
+          ctx.globalAlpha = 0.9;
+          ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText(GANTT_SHORT[s.key], ttx, y - ds - 3);
+          ctx.globalAlpha = 1;
+        }
       }
     });
   });
@@ -3587,7 +3706,7 @@ function openDetail(caseId) {
   // fields
   document.getElementById('d-name').value     = c.name;
   document.getElementById('d-opn').value      = c.opn || '';
-  document.getElementById('d-assignee').value = c.assignee;
+  document.getElementById('d-mcp').checked    = !!c.mcpFlag;
   document.getElementById('d-prio').value     = c.prio;
   document.getElementById('d-issues').value   = c.issues;
   document.getElementById('d-area').value          = c.area || '';
@@ -3610,6 +3729,7 @@ function openDetail(caseId) {
 
   renderTargetDates('d', returnDateIso);
   loadActualDates('d', c.actualDates);
+  onMcpChange('d');
 
   // date MM/DD → YYYY-MM-DD
   if (c.due) {
@@ -3673,9 +3793,8 @@ function saveDetail() {
   const c = CASES.find(x => x.id === detailCaseId);
   if (!c) return;
   const name     = document.getElementById('d-name').value.trim();
-  const assignee = document.getElementById('d-assignee').value.trim();
   const due      = document.getElementById('d-due').value;
-  if (!name || !assignee) return;
+  if (!name) return;
 
   if (due) {
     const [, mo, d] = due.split('-');
@@ -3683,7 +3802,7 @@ function saveDetail() {
   }
   c.name     = name;
   c.opn      = document.getElementById('d-opn').value.trim();
-  c.assignee = assignee;
+  c.mcpFlag  = document.getElementById('d-mcp').checked;
   c.status   = document.getElementById('d-status').value;
   c.stage    = document.getElementById('d-stage').value;
   c.prio     = document.getElementById('d-prio').value;
