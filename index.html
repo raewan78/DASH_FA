@@ -1,0 +1,3169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FT CASE 진행 상황</title>
+<style>
+:root {
+  --bg:              #080C12;
+  --surface:         #0E1520;
+  --surface-raised:  #152030;
+  --surface-hover:   #1A2840;
+  --border:          #1D2D40;
+  --border-subtle:   #111C2A;
+
+  --text-primary:    #D9E8F8;
+  --text-secondary:  #6E8FAD;
+  --text-muted:      #38536B;
+
+  --accent:          #1A8FE3;
+  --accent-dim:      rgba(26, 143, 227, 0.10);
+  --accent-glow:     rgba(26, 143, 227, 0.18);
+
+  --done:            #22C78A;
+  --done-bg:         rgba(34, 199, 138, 0.09);
+  --progress:        #1A8FE3;
+  --progress-bg:     rgba(26, 143, 227, 0.09);
+  --delayed:         #F25069;
+  --delayed-bg:      rgba(242, 80, 105, 0.09);
+  --waiting:         #4A5C6E;
+  --waiting-bg:      rgba(74, 92, 110, 0.12);
+
+  --prio-h:          #F09040;
+  --prio-h-bg:       rgba(240, 144, 64, 0.10);
+  --prio-m:          #DDB030;
+  --prio-m-bg:       rgba(221, 176, 48, 0.10);
+  --prio-l:          #4A5C6E;
+  --prio-l-bg:       rgba(74, 92, 110, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── HEADER ────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left { display: flex; align-items: center; gap: 14px; }
+
+.sys-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(26,143,227,0.22);
+  padding: 3px 9px;
+  border-radius: 3px;
+}
+
+.header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.live {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--done);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--done);
+  border-radius: 50%;
+  animation: blink 2.4s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(34,199,138,0.5); }
+  50%       { opacity: 0.5; box-shadow: 0 0 0 4px rgba(34,199,138,0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-dot { animation: none; }
+}
+
+/* ── MAIN ───────────────────────────────────────── */
+.main {
+  padding: 24px 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ── KPI CARDS ──────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.kpi-total::before { background: var(--accent); }
+.kpi-done::before  { background: var(--done); }
+.kpi-prog::before  { background: var(--progress); }
+.kpi-late::before  { background: var(--delayed); }
+.kpi-wait::before  { background: var(--waiting); }
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.kpi-value {
+  font-size: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.kpi-total .kpi-value { color: var(--text-primary); }
+.kpi-done  .kpi-value { color: var(--done); }
+.kpi-prog  .kpi-value { color: var(--progress); }
+.kpi-late  .kpi-value { color: var(--delayed); }
+.kpi-wait  .kpi-value { color: var(--waiting); }
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── CONTENT LAYOUT ─────────────────────────────── */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timeline-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.timeline-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-body {
+  padding: 10px 20px 14px;
+}
+
+/* ── LIGHT MODE ─────────────────────────────────── */
+html.light {
+  --bg:              #EEF3F8;
+  --surface:         #FFFFFF;
+  --surface-raised:  #F4F8FC;
+  --surface-hover:   #E6EEF6;
+  --border:          #C2D4E4;
+  --border-subtle:   #D8E6F0;
+  --text-primary:    #0D1C2B;
+  --text-secondary:  #3E5C78;
+  --text-muted:      #7A9AB5;
+  --accent:          #1168B8;
+  --accent-dim:      rgba(17,104,184,0.10);
+  --accent-glow:     rgba(17,104,184,0.16);
+  --done:            #0A8E60;
+  --done-bg:         rgba(10,142,96,0.10);
+  --progress:        #1168B8;
+  --progress-bg:     rgba(17,104,184,0.10);
+  --delayed:         #C22040;
+  --delayed-bg:      rgba(194,32,64,0.10);
+  --waiting:         #5A7A96;
+  --waiting-bg:      rgba(90,122,150,0.12);
+  --prio-h:          #C05A0A;
+  --prio-h-bg:       rgba(192,90,10,0.10);
+  --prio-m:          #9A7008;
+  --prio-m-bg:       rgba(154,112,8,0.10);
+  --prio-l:          #5A7A96;
+  --prio-l-bg:       rgba(90,122,150,0.10);
+}
+
+/* ── THEME TOGGLE ────────────────────────────────── */
+.theme-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.theme-toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+/* ── PANEL ──────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── FILTER TABS ────────────────────────────────── */
+.filter-tabs { display: flex; gap: 3px; }
+
+.ftab {
+  padding: 3px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ftab:hover { background: var(--surface-raised); color: var(--text-secondary); }
+.ftab.active { background: var(--accent-dim); color: var(--accent); }
+.ftab:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── TABLE ──────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  padding: 9px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+}
+
+thead th:hover { color: var(--text-secondary); }
+
+thead th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+tbody tr:hover { background: var(--surface-hover); }
+
+tbody tr.row-hidden { display: none; }
+
+td {
+  padding: 11px 16px;
+  vertical-align: middle;
+}
+
+.td-id {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.td-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.td-assignee {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.td-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.td-date.overdue { color: var(--delayed); font-weight: 600; }
+
+/* STATUS PILL */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.s-done     { background: var(--done-bg);     color: var(--done); }
+.s-done     .pill-dot { background: var(--done); }
+.s-progress { background: var(--progress-bg); color: var(--progress); }
+.s-progress .pill-dot { background: var(--progress); }
+.s-delayed  { background: var(--delayed-bg);  color: var(--delayed); }
+.s-delayed  .pill-dot { background: var(--delayed); animation: blink 1.4s infinite; }
+.s-waiting    { background: var(--waiting-bg);  color: var(--waiting); }
+.s-waiting    .pill-dot { background: var(--waiting); }
+.s-interim    { background: rgba(26,143,227,0.09); color: #4DB3F5; }
+.s-interim    .pill-dot { background: #4DB3F5; }
+.s-interim4   { background: rgba(240,144,64,0.09); color: var(--prio-h); }
+.s-interim4   .pill-dot { background: var(--prio-h); }
+.s-final4d    { background: rgba(26,143,227,0.09); color: var(--accent); }
+.s-final4d    .pill-dot { background: var(--accent); }
+.s-final8d    { background: rgba(240,144,64,0.09); color: var(--prio-h); }
+.s-final8d    .pill-dot { background: var(--prio-h); }
+
+/* PRIORITY */
+.prio {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.p-h { color: var(--prio-h); background: var(--prio-h-bg); }
+.p-m { color: var(--prio-m); background: var(--prio-m-bg); }
+.p-l { color: var(--prio-l); background: var(--prio-l-bg); }
+
+/* PROGRESS */
+.prog-cell { min-width: 130px; }
+
+.prog-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.prog-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prog-pct {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 38px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* ISSUE BADGE */
+.issue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.issue-y { background: var(--delayed-bg); color: var(--delayed); }
+.issue-n { color: var(--text-muted); }
+
+/* ── SIDE PANELS ────────────────────────────────── */
+.side { display: flex; flex-direction: column; gap: 14px; }
+
+/* OVERALL PROGRESS */
+.chart-wrap {
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.donut-outer {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 18px;
+}
+
+.donut-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-pct {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.donut-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* OVERALL GANTT */
+.overall-gantt-wrap {
+  width: 100%;
+  padding: 4px 16px 14px;
+  box-sizing: border-box;
+}
+.overall-gantt-hdr {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+#overall-gantt { width: 100%; display: block; }
+
+/* NEXT ACTION */
+.next-action-wrap {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.next-action-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.na-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.na-table th {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 0 10px 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.na-table td {
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.na-table tr:last-child td { border-bottom: none; }
+.na-dday { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12px; }
+.na-dday.on-time  { color: var(--done); }
+.na-dday.overdue  { color: var(--delayed); }
+.na-dday.soon     { color: var(--prio-h); }
+.na-empty { font-size: 11px; color: var(--text-muted); padding: 8px 0; }
+
+/* BREAKDOWN */
+.breakdown {
+  padding: 4px 20px 20px;
+}
+
+.bk-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bk-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bk-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 0 0 52px;
+}
+
+.bk-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bk-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.bk-count {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  min-width: 18px;
+  text-align: right;
+}
+
+/* ACTIVITY */
+.activity {
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.act-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.act-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-weight: 700;
+}
+
+.act-done    { background: var(--done-bg);     color: var(--done); }
+.act-prog    { background: var(--progress-bg); color: var(--progress); }
+.act-issue   { background: var(--delayed-bg);  color: var(--delayed); }
+
+.act-text strong { color: var(--text-primary); font-weight: 500; }
+
+.act-time {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── LOGIN SCREEN ───────────────────────────────── */
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.login-box {
+  width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.login-top {
+  padding: 32px 32px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.login-sys {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.login-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.login-form {
+  padding: 28px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.field input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field input::placeholder { color: var(--text-muted); }
+
+.field input:focus {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.login-error {
+  font-size: 12px;
+  color: var(--delayed);
+  background: var(--delayed-bg);
+  border: 1px solid rgba(242,80,105,0.2);
+  border-radius: 3px;
+  padding: 8px 12px;
+  display: none;
+}
+
+.login-error.visible { display: block; }
+
+.login-btn {
+  margin-top: 4px;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.login-btn:hover { opacity: 0.88; }
+.login-btn:active { opacity: 0.75; }
+.login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.login-footer {
+  padding: 14px 32px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* Fade out login, fade in dashboard */
+#login-screen.fade-out {
+  animation: fadeOut 0.4s ease forwards;
+}
+
+#dashboard {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+#dashboard.visible { opacity: 1; }
+
+@keyframes fadeOut {
+  to { opacity: 0; pointer-events: none; }
+}
+
+/* ── SPRINT PROGRESS BAR at bottom */
+
+.logout-btn {
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.logout-btn:hover {
+  color: var(--delayed);
+  border-color: rgba(242, 80, 105, 0.4);
+  background: var(--delayed-bg);
+}
+
+.logout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── ADD CASE BUTTON ────────────────────────────── */
+.add-case-row {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.add-case-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px dashed rgba(26, 143, 227, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.add-case-btn:hover {
+  background: var(--accent-glow);
+  border-color: rgba(26, 143, 227, 0.6);
+}
+
+.add-case-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.add-case-btn .plus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* ── MODAL ──────────────────────────────────────── */
+#modal-overlay,
+#detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 14, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+#modal-overlay  { z-index: 8000; }
+#detail-overlay { z-index: 8001; }
+
+#modal-overlay.open,
+#detail-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  width: 95vw;
+  max-width: 95vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transform: translateY(12px);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+#modal-overlay.open .modal,
+#detail-overlay.open .modal { transform: translateY(0); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+
+.modal-close:hover { background: var(--surface-raised); color: var(--text-primary); }
+.modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.mfield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mfield.full { grid-column: 1 / -1; }
+
+.mfield label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mfield input,
+.mfield select {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.mfield input::placeholder { color: var(--text-muted); }
+
+.mfield input:focus,
+.mfield select:focus { border-color: var(--accent); background: var(--surface-hover); }
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.mfield select { padding-right: 28px; cursor: pointer; }
+
+.mfield select option {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+/* progress range */
+.range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-wrap input[type="range"] {
+  flex: 1;
+  padding: 0;
+  height: 4px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  background: var(--border);
+  border-radius: 2px;
+  border: none;
+}
+
+.range-val {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  min-width: 38px;
+  text-align: right;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-cancel {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+
+.btn-cancel:hover { background: var(--surface-raised); color: var(--text-primary); }
+
+.btn-submit {
+  padding: 8px 22px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.btn-submit:hover { opacity: 0.85; }
+.btn-submit:focus-visible,
+.btn-cancel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── STAGE SELECTOR ─────────────────────────────── */
+.stage-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stage-btn {
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.stage-btn:hover { border-color: var(--accent); color: var(--accent); }
+.stage-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.stage-btn.sel-wait    { background:rgba(74,92,110,0.18);  border-color:#4A5C6E; color:#8AA8C0; }
+.stage-btn.sel-initial { background:rgba(56,189,248,0.12); border-color:#38BDF8; color:#38BDF8; }
+.stage-btn.sel-i1,
+.stage-btn.sel-i2,
+.stage-btn.sel-i3      { background:rgba(77,179,245,0.12); border-color:#4DB3F5; color:#4DB3F5; }
+.stage-btn.sel-i4      { background:rgba(240,144,64,0.12); border-color:var(--prio-h); color:var(--prio-h); }
+.stage-btn.sel-f4d     { background:rgba(26,143,227,0.12); border-color:var(--accent); color:var(--accent); }
+.stage-btn.sel-f8d     { background:rgba(240,144,64,0.12); border-color:var(--prio-h); color:var(--prio-h); }
+
+/* ── STATUS TOGGLE (Open / Close) ───────────────── */
+.status-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stoggle {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--surface-raised);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.stoggle + .stoggle { border-left: 1px solid var(--border); }
+.stoggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.stoggle.open-active  { background: var(--progress-bg); color: var(--progress); }
+.stoggle.close-active { background: var(--done-bg);     color: var(--done);     }
+
+/* ── STAGE BADGE (table) ────────────────────────── */
+.sbadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.sb-wait  { background:rgba(74,92,110,0.14);  color:#8AA8C0; }
+.sb-init  { background:rgba(56,189,248,0.10); color:#38BDF8; }
+.sb-i123  { background:rgba(77,179,245,0.10); color:#4DB3F5; }
+.sb-i4    { background:rgba(240,144,64,0.09); color:var(--prio-h); }
+.sb-f4d   { background:rgba(26,143,227,0.10); color:var(--accent); }
+.sb-f8d   { background:rgba(240,144,64,0.09); color:var(--prio-h); }
+
+/* ── ROW HOVER INDICATOR ────────────────────────── */
+tbody tr:hover {
+  background: var(--surface-hover);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* ── DETAIL MODAL ───────────────────────────────── */
+.detail-modal { width: 95vw; max-width: 95vw; }
+
+.two-col-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.modal-lr {
+  display: grid;
+  grid-template-columns: 1fr 1.9fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.modal-left-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-right-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-right-top {
+  display: block;
+}
+
+.target-gantt-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.target-gantt-row > .mfield.gantt-mfield {
+  width: 100%;
+}
+
+/* ── TARGET DATE BREAKDOWN ──────────────────────── */
+.target-dates {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.tdate-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 14px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  transition: background 0.1s;
+}
+
+.tdate-row:last-child { border-bottom: none; }
+.tdate-row:hover { background: var(--surface-hover); }
+
+.tdate-label {
+  flex: 1;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tdate-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 64px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tdate-val.empty { color: var(--text-muted); font-weight: 400; }
+
+.tdate-offset {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  min-width: 100px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tdate-head {
+  display: flex;
+  align-items: center;
+  padding: 4px 14px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+.tdate-head-spacer { flex: 1; }
+.tdate-head-col {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.tdate-actual {
+  width: 120px;
+  flex-shrink: 0;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tdate-actual:focus { border-color: var(--accent); background: var(--surface-hover); }
+.tdate-actual:disabled {
+  color: var(--text-secondary);
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+  opacity: 1;
+}
+
+.detail-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detail-head-left .td-id {
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+/* viewer read-only fields */
+#detail-body input:disabled,
+#detail-body select:disabled {
+  opacity: 1;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: var(--surface);
+  cursor: default;
+}
+
+#detail-body .stage-btn:disabled { pointer-events: none; opacity: 0.9; }
+#detail-body .stoggle:disabled   { pointer-events: none; opacity: 0.9; }
+
+/* ── TIMING BADGE ───────────────────────────────── */
+.timing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.timing::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.t-ontime { background: rgba(34,199,138,0.09); color: var(--done); }
+.t-ontime::before { background: var(--done); }
+
+.t-delay  { background: rgba(242,80,105,0.09); color: var(--delayed); }
+.t-delay::before  { background: var(--delayed); animation: blink 1.4s infinite; }
+
+.t-closed { background: rgba(74,92,110,0.12);  color: var(--text-muted); }
+.t-closed::before { background: var(--text-muted); }
+
+/* ── GANTT CHART ────────────────────────────────── */
+.gantt-wrap {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+
+.gantt-wrap canvas {
+  display: block;
+  width: 100%;
+}
+</style>
+<script>(function(){if(localStorage.getItem('ft_theme')==='light')document.documentElement.classList.add('light');}());</script>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-top">
+      <div class="login-sys">QA System</div>
+      <div class="login-title">FT CASE Dashboard</div>
+      <div class="login-sub">인증된 사용자만 접근할 수 있습니다.</div>
+    </div>
+    <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label for="inp-id">ID</label>
+        <input id="inp-id" type="text" placeholder="아이디 입력" autocomplete="username" />
+      </div>
+      <div class="field">
+        <label for="inp-pw">Password</label>
+        <input id="inp-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password" />
+      </div>
+      <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
+      <button type="submit" class="login-btn">로그인</button>
+    </form>
+    <div class="login-footer">FT CASE Management &nbsp;·&nbsp; Sprint 3</div>
+  </div>
+</div>
+
+<!-- DASHBOARD WRAPPER -->
+<div id="dashboard">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <span class="sys-tag">QA System</span>
+    <h1>FT CASE 진행 상황</h1>
+  </div>
+  <div class="header-right">
+    <span class="live"><span class="live-dot"></span>LIVE</span>
+    <span>기준일: 2026-06-30</span>
+    <span id="role-tag" style="font-size:10px;font-weight:700;letter-spacing:.1em;"></span>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
+    <button class="logout-btn" onclick="handleLogout()">Logout</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi kpi-total">
+      <div class="kpi-label">총 케이스</div>
+      <div class="kpi-value" id="cnt-total">10</div>
+      <div class="kpi-sub">Sprint 3 대상</div>
+    </div>
+    <div class="kpi kpi-prog">
+      <div class="kpi-label">Open</div>
+      <div class="kpi-value" id="cnt-open">8</div>
+      <div class="kpi-sub" id="sub-open">80.0%</div>
+    </div>
+    <div class="kpi kpi-done">
+      <div class="kpi-label">Close</div>
+      <div class="kpi-value" id="cnt-close">2</div>
+      <div class="kpi-sub" id="sub-close">20.0%</div>
+    </div>
+    <div class="kpi kpi-late">
+      <div class="kpi-label">HIGH Priority</div>
+      <div class="kpi-value" id="cnt-high">5</div>
+      <div class="kpi-sub">긴급 케이스</div>
+    </div>
+    <div class="kpi kpi-wait">
+      <div class="kpi-label">Returned Units</div>
+      <div class="kpi-value" id="cnt-units">7</div>
+      <div class="kpi-sub">총 반환 수량</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TIMELINE PANEL -->
+    <div class="timeline-panel">
+      <div class="panel-header">
+        <span class="panel-title">Open Case time-line</span>
+        <span style="font-size:10px;color:var(--text-muted);">
+          <span style="color:var(--accent)">◆</span> Target &nbsp;
+          <span style="color:var(--done)">●</span> Actual
+        </span>
+      </div>
+      <div class="timeline-body">
+        <canvas id="overall-gantt"></canvas>
+        <div class="next-action-wrap">
+          <div class="next-action-title">Next Report</div>
+          <div id="next-actions"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Case list</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="add-case-row" id="add-case-row" style="margin:0;padding:0;border:none;background:none;">
+            <button class="add-case-btn" onclick="openModal()">
+              <span class="plus">+</span> Add Case
+            </button>
+          </div>
+          <div class="filter-tabs">
+            <button class="ftab active" data-filter="all"   onclick="filterTable(this,'all')">전체</button>
+            <button class="ftab"        data-filter="open"  onclick="filterTable(this,'open')">Open</button>
+            <button class="ftab"        data-filter="close" onclick="filterTable(this,'close')">Close</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="ft-table">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>End customer</th>
+              <th>담당자</th>
+              <th>상태</th>
+              <th>우선순위</th>
+              <th>FA stage</th>
+              <th>SFDC Open date</th>
+              <th>Returned Units</th>
+              <th>진척도</th>
+            </tr>
+          </thead>
+          <tbody id="ft-body">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+
+</main>
+
+</div><!-- /dashboard -->
+
+<!-- CASE 상세 / 수정 MODAL -->
+<div id="detail-overlay" onclick="onDetailOverlay(event)">
+  <div class="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+    <div class="modal-header">
+      <div class="detail-head-left">
+        <span class="td-id" id="d-caseid-display" style="font-size:15px;letter-spacing:.06em;"></span>
+        <span id="d-status-display"></span>
+        <span id="d-timing-display"></span>
+      </div>
+      <button class="modal-close" onclick="closeDetail()" aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body" id="detail-body">
+      <div class="modal-lr">
+        <!-- LEFT: 기본 정보 필드 -->
+        <div class="modal-left-fields">
+          <div class="mfield">
+            <label for="d-name">End customer</label>
+            <input id="d-name" type="text" placeholder="케이스 내용" />
+          </div>
+          <div class="mfield">
+            <label for="d-opn">OPN</label>
+            <input id="d-opn" type="text" placeholder="OPN 입력" />
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-assignee">담당자</label>
+              <input id="d-assignee" type="text" placeholder="이름" />
+            </div>
+            <div class="mfield">
+              <label for="d-prio">우선순위</label>
+              <div class="select-wrap">
+                <select id="d-prio">
+                  <option value="H">HIGH</option>
+                  <option value="M">MED</option>
+                  <option value="L">LOW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label>상태</label>
+              <div class="status-toggle">
+                <button type="button" class="stoggle" id="d-stoggle-open"  onclick="setDetailStatus('open')">Open</button>
+                <button type="button" class="stoggle" id="d-stoggle-close" onclick="setDetailStatus('close')">Close</button>
+              </div>
+              <input type="hidden" id="d-status" value="open" />
+            </div>
+            <div class="mfield">
+              <label for="d-due">SFDC Open date</label>
+              <input id="d-due" type="date" />
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-issues">Returned Units</label>
+              <input id="d-issues" type="number" min="0" />
+            </div>
+            <div class="mfield">
+              <label>진척도</label>
+              <div id="d-timing-badge" style="padding-top:6px;"></div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-area">Area</label>
+              <select id="d-area">
+                <option value="">— 선택 —</option>
+                <option value="APAC">APAC</option>
+                <option value="Korea/Japan">Korea/Japan</option>
+                <option value="Europe">Europe</option>
+                <option value="AM">AM</option>
+                <option value="Taiwan">Taiwan</option>
+              </select>
+            </div>
+            <div class="mfield">
+              <label for="d-fail-location">Fail location</label>
+              <select id="d-fail-location">
+                <option value="">— 선택 —</option>
+                <option value="Line">Line</option>
+                <option value="Field">Field</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-fail-rate">Fail rate (%)</label>
+              <input id="d-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+            </div>
+            <div class="mfield">
+              <label for="d-failure-mode">Failure mode</label>
+              <input id="d-failure-mode" type="text" placeholder="e.g. Short circuit" />
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Units return date + Target Date + FA Stage -->
+        <div class="modal-right-fields">
+          <div class="modal-right-top">
+            <div class="mfield">
+              <label for="d-return-date">Units return date</label>
+              <input id="d-return-date" type="date" oninput="onReturnDateChange('d-return-date','d')" />
+            </div>
+          </div>
+          <div class="target-gantt-row">
+          <div class="mfield">
+            <label>Target Date</label>
+            <div class="target-dates">
+              <div class="tdate-head">
+                <span class="tdate-head-spacer"></span>
+                <span class="tdate-head-col" style="width:110px">Actual</span>
+                <span class="tdate-head-col" style="min-width:60px"></span>
+                <span class="tdate-head-col" style="min-width:60px">Target</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Initial report</span>
+                <input type="date" class="tdate-actual" id="d-ta-initial" />
+                <span class="tdate-offset">+1 wd</span>
+                <span class="tdate-val empty" id="d-td-initial">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (1) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i1" />
+                <span class="tdate-offset">+2 wd</span>
+                <span class="tdate-val empty" id="d-td-i1">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (2) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i2" />
+                <span class="tdate-offset">+6 wd</span>
+                <span class="tdate-val empty" id="d-td-i2">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (3) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i3" />
+                <span class="tdate-offset">+8 wd</span>
+                <span class="tdate-val empty" id="d-td-i3">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (4) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i4" />
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="d-td-i4">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Final 4D report</span>
+                <input type="date" class="tdate-actual" id="d-ta-f4d" />
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="d-td-f4d">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Final 8D report</span>
+                <input type="date" class="tdate-actual" id="d-ta-f8d" />
+                <span class="tdate-offset">+16 wd</span>
+                <span class="tdate-val empty" id="d-td-f8d">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="mfield gantt-mfield">
+            <label>일정 현황</label>
+            <div class="gantt-wrap">
+              <canvas id="d-gantt"></canvas>
+            </div>
+          </div>
+          </div><!-- /.target-gantt-row -->
+          <div class="mfield">
+            <label>FA stage</label>
+            <div class="stage-group" id="d-stage-group">
+              <button type="button" class="stage-btn" data-stage="wait-device" onclick="selectDetailStage(this)">Wait Device</button>
+              <button type="button" class="stage-btn" data-stage="initial"     onclick="selectDetailStage(this)">Initial</button>
+              <button type="button" class="stage-btn" data-stage="interim-1"   onclick="selectDetailStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn" data-stage="interim-2"   onclick="selectDetailStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn" data-stage="interim-3"   onclick="selectDetailStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn" data-stage="interim-4"   onclick="selectDetailStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn" data-stage="final-4d"    onclick="selectDetailStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn" data-stage="final-8d"    onclick="selectDetailStage(this)">Final 8D</button>
+            </div>
+            <input type="hidden" id="d-stage" value="wait-device" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" id="detail-footer"></div>
+  </div>
+</div>
+
+<!-- CASE 등록 MODAL -->
+<div id="modal-overlay" onclick="onOverlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Case 등록</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="닫기">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-lr">
+        <!-- LEFT: 기본 정보 필드 -->
+        <div class="modal-left-fields">
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-id">Case ID</label>
+              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6자리 숫자 입력"
+                oninput="this.value=this.value.replace(/[^0-9]/g,'')" />
+              <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">숫자 6자리를 입력해주세요.</span>
+            </div>
+            <div class="mfield">
+              <label for="m-assignee">담당자</label>
+              <input id="m-assignee" type="text" placeholder="이름 입력" />
+            </div>
+          </div>
+          <div class="mfield">
+            <label for="m-name">End customer</label>
+            <input id="m-name" type="text" placeholder="케이스 내용 입력" />
+          </div>
+          <div class="mfield">
+            <label for="m-opn">OPN</label>
+            <input id="m-opn" type="text" placeholder="OPN 입력" />
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label>상태</label>
+              <div class="status-toggle">
+                <button type="button" class="stoggle open-active" id="stoggle-open"  onclick="setStatus('open')">Open</button>
+                <button type="button" class="stoggle"             id="stoggle-close" onclick="setStatus('close')">Close</button>
+              </div>
+              <input type="hidden" id="m-status" value="open" />
+            </div>
+            <div class="mfield">
+              <label for="m-prio">우선순위</label>
+              <div class="select-wrap">
+                <select id="m-prio">
+                  <option value="H">HIGH</option>
+                  <option value="M" selected>MED</option>
+                  <option value="L">LOW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-due">SFDC Open date</label>
+              <input id="m-due" type="date" />
+            </div>
+            <div class="mfield">
+              <label for="m-issues">Returned Units</label>
+              <input id="m-issues" type="number" min="0" value="0" placeholder="0" />
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-area">Area</label>
+              <select id="m-area">
+                <option value="">— 선택 —</option>
+                <option value="APAC">APAC</option>
+                <option value="Korea/Japan">Korea/Japan</option>
+                <option value="Europe">Europe</option>
+                <option value="AM">AM</option>
+                <option value="Taiwan">Taiwan</option>
+              </select>
+            </div>
+            <div class="mfield">
+              <label for="m-fail-location">Fail location</label>
+              <select id="m-fail-location">
+                <option value="">— 선택 —</option>
+                <option value="Line">Line</option>
+                <option value="Field">Field</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-fail-rate">Fail rate (%)</label>
+              <input id="m-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00" />
+            </div>
+            <div class="mfield">
+              <label for="m-failure-mode">Failure mode</label>
+              <input id="m-failure-mode" type="text" placeholder="e.g. Short circuit" />
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Units return date + Target Date + FA Stage -->
+        <div class="modal-right-fields">
+          <div class="modal-right-top">
+            <div class="mfield">
+              <label for="m-return-date">Units return date</label>
+              <input id="m-return-date" type="date" oninput="onReturnDateChange('m-return-date','m')" />
+            </div>
+          </div>
+          <div class="target-gantt-row">
+          <div class="mfield">
+            <label>Target Date</label>
+            <div class="target-dates">
+              <div class="tdate-head">
+                <span class="tdate-head-spacer"></span>
+                <span class="tdate-head-col" style="width:110px">Actual</span>
+                <span class="tdate-head-col" style="min-width:60px"></span>
+                <span class="tdate-head-col" style="min-width:60px">Target</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Initial report</span>
+                <input type="date" class="tdate-actual" id="m-ta-initial" />
+                <span class="tdate-offset">+1 wd</span>
+                <span class="tdate-val empty" id="m-td-initial">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (1) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i1" />
+                <span class="tdate-offset">+2 wd</span>
+                <span class="tdate-val empty" id="m-td-i1">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (2) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i2" />
+                <span class="tdate-offset">+6 wd</span>
+                <span class="tdate-val empty" id="m-td-i2">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (3) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i3" />
+                <span class="tdate-offset">+8 wd</span>
+                <span class="tdate-val empty" id="m-td-i3">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (4) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i4" />
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="m-td-i4">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Final 4D report</span>
+                <input type="date" class="tdate-actual" id="m-ta-f4d" />
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="m-td-f4d">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Final 8D report</span>
+                <input type="date" class="tdate-actual" id="m-ta-f8d" />
+                <span class="tdate-offset">+16 wd</span>
+                <span class="tdate-val empty" id="m-td-f8d">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="mfield gantt-mfield">
+            <label>일정 현황</label>
+            <div class="gantt-wrap">
+              <canvas id="m-gantt"></canvas>
+            </div>
+          </div>
+          </div><!-- /.target-gantt-row -->
+          <div class="mfield">
+            <label>FA stage</label>
+            <div class="stage-group" id="stage-group">
+              <button type="button" class="stage-btn sel-wait" data-stage="wait-device" onclick="selectStage(this)">Wait Device</button>
+              <button type="button" class="stage-btn"          data-stage="initial"     onclick="selectStage(this)">Initial</button>
+              <button type="button" class="stage-btn"          data-stage="interim-1"   onclick="selectStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn"          data-stage="interim-2"   onclick="selectStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn"          data-stage="interim-3"   onclick="selectStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn"          data-stage="interim-4"   onclick="selectStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn"          data-stage="final-4d"    onclick="selectStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn"          data-stage="final-8d"    onclick="selectStage(this)">Final 8D</button>
+            </div>
+            <input type="hidden" id="m-stage" value="wait-device" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">취소</button>
+      <button class="btn-submit" onclick="submitCase()">등록</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA (localStorage 저장) ───────────────────── */
+const STORAGE_KEY = 'ft_cases_v1';
+
+function saveCases() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
+}
+
+function loadCases() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) { const arr = JSON.parse(raw); arr.forEach(c => CASES.push(c)); }
+  } catch(e) {}
+}
+
+const CASES = [];
+
+/* ── META TABLES ────────────────────────────────── */
+const STATUS_META = {
+  open:  { label:'Open',  cls:'s-progress' },
+  close: { label:'Close', cls:'s-done'     },
+};
+
+const STAGE_META = {
+  'wait-device': { label:'Wait Device', cls:'sb-wait' },
+  'initial':     { label:'Initial',     cls:'sb-init' },
+  'interim-1':   { label:'Interim (1)', cls:'sb-i123' },
+  'interim-2':   { label:'Interim (2)', cls:'sb-i123' },
+  'interim-3':   { label:'Interim (3)', cls:'sb-i123' },
+  'interim-4':   { label:'Interim (4)', cls:'sb-i4'   },
+  'final-4d':    { label:'Final 4D',    cls:'sb-f4d'  },
+  'final-8d':    { label:'Final 8D',    cls:'sb-f8d'  },
+};
+
+const STAGE_SEL_CLS = {
+  'wait-device': 'sel-wait',
+  'initial':     'sel-initial',
+  'interim-1':   'sel-i1',
+  'interim-2':   'sel-i2',
+  'interim-3':   'sel-i3',
+  'interim-4':   'sel-i4',
+  'final-4d':    'sel-f4d',
+  'final-8d':    'sel-f8d',
+};
+
+const PRIO_META = {
+  H: { label:'HIGH', cls:'p-h' },
+  M: { label:'MED',  cls:'p-m' },
+  L: { label:'LOW',  cls:'p-l' },
+};
+
+/* ── 한국 공휴일 (고정 + 대체 + 임시) ───────────── */
+const KR_HOLIDAYS = new Set([
+  // ── 2025 ──────────────────────────────────────
+  '2025-01-01', // 신정
+  '2025-01-27', // 임시공휴일 (설 연휴 연결)
+  '2025-01-28', // 설날 전날
+  '2025-01-29', // 설날
+  '2025-01-30', // 설날 다음날
+  '2025-03-01', // 삼일절 (토)
+  '2025-03-03', // 삼일절 대체공휴일
+  '2025-05-05', // 어린이날 + 석가탄신일
+  '2025-05-06', // 어린이날/석가탄신일 대체공휴일
+  '2025-06-06', // 현충일
+  '2025-08-15', // 광복절
+  '2025-10-03', // 개천절
+  '2025-10-05', // 추석 전날 (일)
+  '2025-10-06', // 추석
+  '2025-10-07', // 추석 다음날
+  '2025-10-08', // 추석 대체공휴일
+  '2025-10-09', // 한글날
+  '2025-12-25', // 성탄절
+  // ── 2026 ──────────────────────────────────────
+  '2026-01-01', // 신정
+  '2026-02-16', // 설날 전날
+  '2026-02-17', // 설날
+  '2026-02-18', // 설날 다음날
+  '2026-03-01', // 삼일절 (일)
+  '2026-03-02', // 삼일절 대체공휴일
+  '2026-05-05', // 어린이날
+  '2026-05-24', // 석가탄신일 (일)
+  '2026-05-25', // 석가탄신일 대체공휴일
+  '2026-06-06', // 현충일 (토)
+  '2026-06-08', // 현충일 대체공휴일
+  '2026-08-15', // 광복절 (토)
+  '2026-08-17', // 광복절 대체공휴일
+  '2026-09-30', // 추석 전날
+  '2026-10-01', // 추석
+  '2026-10-02', // 추석 다음날
+  '2026-10-03', // 개천절 (토)
+  '2026-10-05', // 개천절 대체공휴일
+  '2026-10-09', // 한글날
+  '2026-12-25', // 성탄절
+  // ── 2027 ──────────────────────────────────────
+  '2027-01-01', // 신정
+  '2027-02-06', // 설날 전날
+  '2027-02-07', // 설날
+  '2027-02-08', // 설날 다음날
+  '2027-03-01', // 삼일절 (월)
+  '2027-05-05', // 어린이날
+  '2027-05-13', // 석가탄신일
+  '2027-06-06', // 현충일 (일)
+  '2027-06-07', // 현충일 대체공휴일
+  '2027-08-15', // 광복절 (일)
+  '2027-08-16', // 광복절 대체공휴일
+  '2027-10-03', // 개천절 (일)
+  '2027-10-04', // 개천절 대체공휴일
+  '2027-10-09', // 한글날 (토)
+  '2027-10-11', // 한글날 대체공휴일
+  '2027-10-15', // 추석 전날
+  '2027-10-16', // 추석
+  '2027-10-17', // 추석 다음날
+  '2027-12-25', // 성탄절 (토)
+  '2027-12-27', // 성탄절 대체공휴일
+  // ── 임시공휴일은 아래에 추가 ──────────────────
+  '2026-06-03', // 임시공휴일 (제21대 대통령 선거일)
+]);
+
+function isWorkingDay(d) {
+  const day = d.getDay();
+  if (day === 0 || day === 6) return false;
+  const iso = d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+  return !KR_HOLIDAYS.has(iso);
+}
+
+/* ── WORKING DAY CALC ───────────────────────────── */
+const TARGET_OFFSETS = [
+  { id: 'td-initial', key: 'initial', n: 1  },
+  { id: 'td-i1',      key: 'i1',     n: 2  },
+  { id: 'td-i2',      key: 'i2',     n: 6  },
+  { id: 'td-i3',      key: 'i3',     n: 8  },
+  { id: 'td-i4',      key: 'i4',     n: 13 },
+  { id: 'td-f4d',     key: 'f4d',    n: 13 },
+  { id: 'td-f8d',     key: 'f8d',    n: 16 },
+];
+
+function addWorkingDays(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00');
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  return String(d.getMonth() + 1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+}
+
+function renderTargetDates(prefix, dateStr) {
+  TARGET_OFFSETS.forEach(({ id, n }) => {
+    const el = document.getElementById(`${prefix}-${id}`);
+    if (!el) return;
+    if (dateStr) {
+      el.textContent = addWorkingDays(dateStr, n);
+      el.classList.remove('empty');
+    } else {
+      el.textContent = '—';
+      el.classList.add('empty');
+    }
+  });
+}
+
+function onReturnDateChange(inputId, prefix) {
+  const val = document.getElementById(inputId).value;
+  renderTargetDates(prefix, val || '');
+  renderGanttChart(prefix);
+}
+
+function loadActualDates(prefix, actualDates) {
+  const ad = actualDates || {};
+  TARGET_OFFSETS.forEach(({ key }) => {
+    const el = document.getElementById(prefix + '-ta-' + key);
+    if (el) el.value = ad[key] || '';
+  });
+  renderGanttChart(prefix);
+}
+
+function readActualDates(prefix) {
+  const result = {};
+  TARGET_OFFSETS.forEach(({ key }) => {
+    const el = document.getElementById(prefix + '-ta-' + key);
+    if (el && el.value) result[key] = el.value;
+  });
+  return result;
+}
+
+/* ── TIMING ─────────────────────────────────────── */
+const STAGE_OFFSETS = {
+  'initial':   1,
+  'interim-1': 2,
+  'interim-2': 6,
+  'interim-3': 8,
+  'interim-4': 13,
+  'final-4d':  13,
+  'final-8d':  16,
+};
+
+function getStageTargetDate(c) {
+  if (!c.returnDate) return null;
+  const n = STAGE_OFFSETS[c.stage];
+  if (n === undefined) return null;
+  const parts = c.returnDate.split('/');
+  const yr = new Date().getFullYear();
+  const iso = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+  const d = new Date(iso + 'T00:00:00');
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getNextStageTargetDate(c) {
+  if (!c.returnDate) return null;
+  const next = STAGE_NEXT[c.stage];
+  if (!next) return null;
+  const off = TARGET_OFFSETS.find(o => o.key === next.key);
+  if (!off) return null;
+  const parts = c.returnDate.split('/');
+  const yr = new Date().getFullYear();
+  const iso = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+  const d = new Date(iso + 'T00:00:00');
+  let added = 0;
+  while (added < off.n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getTimingStatus(c) {
+  if (c.status === 'close') return { label: 'Closed', cls: 't-closed' };
+  const target = getNextStageTargetDate(c);
+  if (target) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diff = Math.round((today - target) / 86400000);
+    if (diff === 0) return { label: 'On time',              cls: 't-ontime' };
+    if (diff > 0)  return { label: 'Delay (+' + diff + 'd)', cls: 't-delay'  };
+    return               { label: 'On time',                cls: 't-ontime' };
+  }
+  return { label: '—', cls: 't-closed' };
+}
+
+/* ── TABLE ──────────────────────────────────────── */
+function buildTable(filter = 'all') {
+  const tbody = document.getElementById('ft-body');
+  tbody.innerHTML = '';
+  CASES.forEach(c => {
+    if (filter !== 'all' && c.status !== filter) return;
+    const sm = STATUS_META[c.status] || { label: c.status, cls: 's-waiting' };
+    const sg = STAGE_META[c.stage]   || { label: c.stage,  cls: 'sb-wait'  };
+    const pm = PRIO_META[c.prio];
+    const tm = getTimingStatus(c);
+    const tr = document.createElement('tr');
+    tr.setAttribute('onclick', `openDetail('${c.id}')`);
+    tr.setAttribute('title', '클릭하여 상세 보기');
+    tr.innerHTML = `
+      <td class="td-id">${c.id}</td>
+      <td class="td-name">${c.name}</td>
+      <td class="td-assignee">${c.assignee}</td>
+      <td><span class="pill ${sm.cls}"><span class="pill-dot"></span>${sm.label}</span></td>
+      <td><span class="prio ${pm.cls}">${pm.label}</span></td>
+      <td><span class="sbadge ${sg.cls}">${sg.label}</span></td>
+      <td class="td-date">${c.due}</td>
+      <td><span class="issue ${c.issues > 0 ? 'issue-y' : 'issue-n'}">${c.issues > 0 ? c.issues : '—'}</span></td>
+      <td><span class="timing ${tm.cls}">${tm.label}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable(btn, filter) {
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTable(filter);
+}
+
+/* ── DONUT (Close 비율) ─────────────────────────── */
+function drawDonut(pct) {
+  const canvas = document.getElementById('donut');
+  const ctx = canvas.getContext('2d');
+  const cx = 65, cy = 65, r = 50, lw = 10;
+  const TWO_PI = Math.PI * 2;
+  const START = -Math.PI / 2;
+  ctx.clearRect(0, 0, 130, 130);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI);
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+  ctx.lineWidth = lw;
+  ctx.stroke();
+  const end = START + (TWO_PI * pct / 100);
+  const grad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+  grad.addColorStop(0, '#1A8FE3');
+  grad.addColorStop(1, '#22C78A');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, START, end);
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+let currentPct = 0;
+function animateDonut() {
+  if (!document.getElementById('donut')) return;
+  const closePct = Math.round(CASES.filter(c => c.status === 'close').length / CASES.length * 100);
+  if (currentPct < closePct) {
+    currentPct++;
+    drawDonut(currentPct);
+    const pctEl = document.getElementById('donut-pct');
+    if (pctEl) pctEl.textContent = currentPct + '%';
+    requestAnimationFrame(animateDonut);
+  }
+}
+
+/* ── KPI UPDATE ─────────────────────────────────── */
+function updateKPIs() {
+  const total  = CASES.length;
+  const closed = CASES.filter(c => c.status === 'close').length;
+  const opened = total - closed;
+  const highs  = CASES.filter(c => c.prio === 'H').length;
+  const units  = CASES.reduce((s, c) => s + c.issues, 0);
+  document.getElementById('cnt-total').textContent = total;
+  document.getElementById('cnt-open').textContent  = opened;
+  document.getElementById('cnt-close').textContent = closed;
+  document.getElementById('cnt-high').textContent  = highs;
+  document.getElementById('cnt-units').textContent = units;
+  document.getElementById('sub-open').textContent  = (opened / total * 100).toFixed(1) + '%';
+  document.getElementById('sub-close').textContent = (closed / total * 100).toFixed(1) + '%';
+  const bkOf = document.getElementById('bk-open-fill');
+  const bkCf = document.getElementById('bk-close-fill');
+  if (bkOf) bkOf.style.width  = (opened / total * 100) + '%';
+  if (bkCf) bkCf.style.width  = (closed / total * 100) + '%';
+  const bkOc = document.getElementById('bk-open-cnt');
+  const bkCc = document.getElementById('bk-close-cnt');
+  if (bkOc) bkOc.textContent = opened;
+  if (bkCc) bkCc.textContent = closed;
+}
+
+/* ── THEME TOGGLE ───────────────────────────────── */
+function getThemeIcon() {
+  return document.documentElement.classList.contains('light') ? '☀️' : '🌙';
+}
+
+function initTheme() {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = getThemeIcon();
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('ft_theme', isLight ? 'light' : 'dark');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = getThemeIcon();
+  renderOverallGantt();
+  renderNextActions();
+}
+
+/* ── LOGIN ──────────────────────────────────────── */
+const ACCOUNTS = [
+  { id: 'admin',  pw: 'admin1234', role: 'admin'  },
+  { id: 'viewer', pw: 'view5678',  role: 'viewer' },
+];
+
+let currentUser = null;
+
+function applyRole() {
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  document.getElementById('add-case-row').style.display = isAdmin ? '' : 'none';
+  // 헤더에 역할 표시
+  const roleTag = document.getElementById('role-tag');
+  if (roleTag) {
+    roleTag.textContent = isAdmin ? 'ADMIN' : 'VIEW ONLY';
+    roleTag.style.color = isAdmin ? 'var(--prio-h)' : 'var(--text-muted)';
+  }
+}
+
+/* ── MODAL ──────────────────────────────────────── */
+function setStatus(val) {
+  document.getElementById('m-status').value = val;
+  document.getElementById('stoggle-open').classList.toggle('open-active',  val === 'open');
+  document.getElementById('stoggle-close').classList.toggle('close-active', val === 'close');
+}
+
+function selectStage(btn) {
+  document.querySelectorAll('#stage-group .stage-btn').forEach(b => {
+    b.className = 'stage-btn';
+  });
+  const selCls = STAGE_SEL_CLS[btn.dataset.stage] || '';
+  if (selCls) btn.classList.add(selCls);
+  document.getElementById('m-stage').value = btn.dataset.stage;
+}
+
+function openModal() {
+  document.getElementById('m-id').value          = '';
+  document.getElementById('m-name').value        = '';
+  document.getElementById('m-opn').value         = '';
+  document.getElementById('m-assignee').value    = '';
+  document.getElementById('m-prio').value        = 'M';
+  document.getElementById('m-due').value         = '';
+  document.getElementById('m-issues').value      = '0';
+  document.getElementById('m-area').value          = '';
+  document.getElementById('m-fail-location').value = '';
+  document.getElementById('m-fail-rate').value     = '';
+  document.getElementById('m-failure-mode').value  = '';
+  document.getElementById('m-return-date').value   = '';
+  renderTargetDates('m', '');
+  loadActualDates('m', {});
+  document.getElementById('m-id-error').style.display = 'none';
+  // reset status toggle → Open
+  setStatus('open');
+  // reset stage → Wait Device
+  document.querySelectorAll('#stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const firstBtn = document.querySelector('#stage-group .stage-btn[data-stage="wait-device"]');
+  if (firstBtn) { firstBtn.classList.add('sel-wait'); }
+  document.getElementById('m-stage').value = 'wait-device';
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('m-id').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function onOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function submitCase() {
+  const caseId   = document.getElementById('m-id').value.trim();
+  const name     = document.getElementById('m-name').value.trim();
+  const assignee = document.getElementById('m-assignee').value.trim();
+  const due      = document.getElementById('m-due').value;
+  const idErr    = document.getElementById('m-id-error');
+
+  if (!/^\d{6}$/.test(caseId)) {
+    idErr.style.display = 'block';
+    document.getElementById('m-id').focus();
+    return;
+  }
+  idErr.style.display = 'none';
+  if (!name)     { document.getElementById('m-name').focus();     return; }
+  if (!assignee) { document.getElementById('m-assignee').focus(); return; }
+  if (!due)      { document.getElementById('m-due').focus();      return; }
+
+  const [, mo, d] = due.split('-');
+  CASES.push({
+    id:       caseId,
+    name,
+    opn:      document.getElementById('m-opn').value.trim(),
+    assignee,
+    status:   document.getElementById('m-status').value,
+    stage:    document.getElementById('m-stage').value,
+    prio:     document.getElementById('m-prio').value,
+    due:           mo + '/' + d,
+    issues:        parseInt(document.getElementById('m-issues').value) || 0,
+    area:          document.getElementById('m-area').value,
+    failLocation:  document.getElementById('m-fail-location').value,
+    failRate:      parseFloat(document.getElementById('m-fail-rate').value) || null,
+    failureMode:   document.getElementById('m-failure-mode').value.trim(),
+    returnDate:    (() => { const v = document.getElementById('m-return-date').value; if (!v) return ''; const [,rm,rd] = v.split('-'); return rm+'/'+rd; })(),
+    actualDates:   readActualDates('m'),
+  });
+
+  saveCases();
+  updateKPIs();
+  buildTable('all');
+  renderOverallGantt();
+  renderNextActions();
+  document.querySelectorAll('.ftab').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === 'all');
+  });
+  closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDetail(); }
+});
+
+/* ── GANTT CHART ────────────────────────────────── */
+const GANTT_LABELS = {
+  initial: 'Initial', i1: 'Interim (1)', i2: 'Interim (2)',
+  i3: 'Interim (3)', i4: 'Interim (4)', f4d: 'F-4D', f8d: 'F-8D',
+};
+
+function renderGanttChart(prefix) {
+  const canvas = document.getElementById(prefix + '-gantt');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const W   = canvas.parentElement.clientWidth || 420;
+  const PL = 72, PR = 16, PT = 18, PB = 38;
+  const ROW_H = 30;
+  const H   = PT + PB + 6 * ROW_H;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C  = {
+    border:  cs.getPropertyValue('--border').trim(),
+    accent:  cs.getPropertyValue('--accent').trim(),
+    done:    cs.getPropertyValue('--done').trim(),
+    delayed: cs.getPropertyValue('--delayed').trim(),
+    muted:   cs.getPropertyValue('--text-muted').trim(),
+    today:   '#F09040',
+    arrived: '#DDB030',
+  };
+
+  const returnVal = document.getElementById(prefix + '-return-date')?.value;
+  if (!returnVal) {
+    ctx.fillStyle = C.muted;
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Units return date 입력 시 차트 표시', W / 2, H / 2);
+    return;
+  }
+
+  const base = new Date(returnVal + 'T00:00:00'); base.setHours(0,0,0,0);
+  const rawRows = TARGET_OFFSETS.map(({ id, key, n }) => {
+    const td = new Date(base);
+    let added = 0;
+    while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+    td.setHours(0, 0, 0, 0);
+    const av = document.getElementById(prefix + '-ta-' + key)?.value;
+    const ad = av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+    return { key, label: GANTT_LABELS[key], targetDate: td, actualDate: ad };
+  });
+  // merge i4 + f4d into one row (share same +13 WD target)
+  const i4row  = rawRows.find(r => r.key === 'i4');
+  const f4drow = rawRows.find(r => r.key === 'f4d');
+  const rows = rawRows
+    .filter(r => r.key !== 'i4' && r.key !== 'f4d');
+  const f8dIdx = rows.findIndex(r => r.key === 'f8d');
+  rows.splice(f8dIdx, 0, {
+    key: 'i4_f4d', label: 'I(4) / F-4D',
+    targetDate: i4row.targetDate,
+    actualDate:  i4row.actualDate,
+    actualDate2: f4drow ? f4drow.actualDate : null,
+    merged: true,
+  });
+
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const allMs = [base, today, ...rows.map(r => r.targetDate),
+    ...rows.filter(r => r.actualDate).map(r => r.actualDate)].map(d => d.getTime());
+
+  const dayMs2  = 86400000;
+  const padDays2 = 2;
+  const originDay2 = new Date(Math.min(...allMs) - padDays2 * dayMs2); originDay2.setHours(0,0,0,0);
+  const endDay2    = new Date(Math.max(...allMs) + padDays2 * dayMs2); endDay2.setHours(0,0,0,0);
+
+  const NONWD_RATIO2 = 0.25;
+  const posMap2 = new Map();
+  let cumPos2 = 0;
+  const _d2 = new Date(originDay2);
+  while (_d2.getTime() <= endDay2.getTime()) {
+    posMap2.set(_d2.getTime(), cumPos2);
+    cumPos2 += isWorkingDay(_d2) ? 1.0 : NONWD_RATIO2;
+    _d2.setDate(_d2.getDate() + 1);
+  }
+  const totalUnits2 = cumPos2 || 1;
+
+  const cW  = W - PL - PR;
+  const axisY = PT + 6 * ROW_H;
+  const toX = d => {
+    const k = new Date(d); k.setHours(0,0,0,0);
+    const p = posMap2.get(k.getTime());
+    return PL + ((p ?? 0) / totalUnits2) * cW;
+  };
+  const toY = i => PT + ROW_H * i + ROW_H / 2;
+
+  /* legend */
+  ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textBaseline = 'middle';
+  const lgY = PT / 2;
+  ctx.fillStyle = C.accent;    ctx.textAlign = 'left';  ctx.fillText('◆ Target', W - PR - 110, lgY);
+  ctx.fillStyle = C.done;      ctx.textAlign = 'left';  ctx.fillText('● Actual', W - PR - 55,  lgY);
+
+  /* row guides + labels */
+  rows.forEach((row, i) => {
+    const y = toY(i);
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(W - PR, y); ctx.stroke();
+    ctx.fillStyle = C.muted;
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(row.label, PL - 6, y);
+  });
+
+  /* x-axis line */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
+  /* Arrived units marker (vertical line across all rows) */
+  const bx = toX(base);
+  if (bx >= PL && bx <= W - PR) {
+    ctx.strokeStyle = C.arrived; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(bx, PT); ctx.lineTo(bx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.save();
+    ctx.translate(bx, PT + 2);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = C.arrived; ctx.globalAlpha = 0.9;
+    ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('Arrived units', 2, 0);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /* today line */
+  const tx = toX(today);
+  if (tx >= PL && tx <= W - PR) {
+    ctx.strokeStyle = C.today; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(tx, PT); ctx.lineTo(tx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* stage data */
+  rows.forEach((row, i) => {
+    const y   = toY(i);
+    const ttx = toX(row.targetDate);
+
+    if (row.merged) {
+      // i4 actual → top half of row, f4d actual → bottom half
+      [{ ad: row.actualDate, dy: -6 }, { ad: row.actualDate2, dy: 6 }].forEach(({ ad, dy }) => {
+        if (!ad) return;
+        const ax = toX(ad);
+        const lc = ad > row.targetDate ? C.delayed : C.done;
+        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(ax, y + dy); ctx.lineTo(ttx, y + dy); ctx.stroke();
+        ctx.strokeStyle = lc; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, y + dy, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = lc;
+        ctx.beginPath(); ctx.arc(ax, y + dy, 5, 0, Math.PI * 2); ctx.fill();
+      });
+    } else {
+      if (row.actualDate) {
+        const ax = toX(row.actualDate);
+        const lc = row.actualDate > row.targetDate ? C.delayed : C.done;
+        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke();
+        ctx.strokeStyle = lc; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = lc;
+        ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+      }
+    }
+
+    /* target diamond */
+    const ds = 4;
+    ctx.fillStyle = C.accent;
+    ctx.beginPath();
+    ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
+    ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
+    ctx.closePath(); ctx.fill();
+  });
+
+  /* x-axis: ticks at each Target date + today */
+  // compute WD offset from today for each target date
+  function wdBetween(a, b) {
+    const step = b >= a ? 1 : -1;
+    let count = 0, d = new Date(a);
+    d.setDate(d.getDate() + step);
+    while (step > 0 ? d.getTime() <= b.getTime() : d.getTime() >= b.getTime()) {
+      if (isWorkingDay(d)) count += step;
+      d.setDate(d.getDate() + step);
+    }
+    return count;
+  }
+
+  // collect unique target-date positions (deduplicate same-day overlaps)
+  const tickDates = [];
+  const seenMs = new Set();
+  rows.forEach(row => {
+    const ms = row.targetDate.getTime();
+    if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(row.targetDate); }
+  });
+
+  // also tick base and today if within range
+  [base, today].forEach(d => {
+    const ms = d.getTime();
+    if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(d); }
+  });
+
+  let lastLX = -999;
+  tickDates.sort((a, b) => a - b).forEach(d => {
+    const x = toX(d);
+    if (x < PL || x > W - PR) return;
+    const isT = d.getTime() === today.getTime();
+    const isBase = d.getTime() === base.getTime();
+
+    ctx.strokeStyle = isT ? C.today : isBase ? C.arrived : C.border;
+    ctx.lineWidth   = (isT || isBase) ? 1.5 : 0.8;
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + 5); ctx.stroke();
+
+    if (x - lastLX >= 22) {
+      const wd  = wdBetween(today, d);
+      const wdLbl   = isT ? 'Today' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
+      const dateLbl = (d.getMonth()+1)+'/'+String(d.getDate()).padStart(2,'0');
+      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+      ctx.fillStyle = isT ? C.today : isBase ? C.arrived : C.muted;
+      ctx.font = (isT || isBase ? 'bold ' : '') + '9px sans-serif';
+      ctx.fillText(wdLbl, x, axisY + 7);
+      ctx.fillStyle = isT ? C.today : C.muted;
+      ctx.font = '8px sans-serif';
+      ctx.fillText(dateLbl, x, axisY + 18);
+      lastLX = x;
+    }
+  });
+}
+
+/* ── OVERALL GANTT ──────────────────────────────── */
+function renderOverallGantt() {
+  const canvas = document.getElementById('overall-gantt');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const openCases = CASES.filter(c => c.status === 'open' && c.returnDate);
+
+  const ROW_H = 38;
+  const PT = 32, PB = 36, PL = 72, PR = 16;
+  const H = PT + PB + Math.max(1, openCases.length) * ROW_H;
+  const W = canvas.parentElement.clientWidth || 800;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C = {
+    border:  cs.getPropertyValue('--border').trim(),
+    accent:  cs.getPropertyValue('--accent').trim(),
+    done:    cs.getPropertyValue('--done').trim(),
+    delayed: cs.getPropertyValue('--delayed').trim(),
+    muted:   cs.getPropertyValue('--text-muted').trim(),
+    sec:     cs.getPropertyValue('--text-secondary').trim(),
+    pri:     cs.getPropertyValue('--text-primary').trim(),
+    today:   '#F09040',
+  };
+
+  if (!openCases.length) {
+    ctx.fillStyle = C.muted;
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('진행 중인 케이스 없음', W / 2, H / 2);
+    return;
+  }
+
+  const yr = new Date().getFullYear();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  /* show up to F-4D by default; extend to F-8D only if any case is at Interim(4)+ */
+  const STAGES_NEED_F8D = new Set(['interim-4', 'final-4d', 'final-8d']);
+  const showF8D = openCases.some(c => STAGES_NEED_F8D.has(c.stage));
+  const visibleOffsets = TARGET_OFFSETS.filter(o => showF8D || o.key !== 'f8d');
+
+  const caseRows = openCases.map(c => {
+    const [mm, dd] = c.returnDate.split('/');
+    const base = new Date(`${yr}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
+    base.setHours(0, 0, 0, 0);
+    const stages = visibleOffsets.map(({ key, n }) => {
+      const td = new Date(base.getTime());
+      let added = 0;
+      while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+      td.setHours(0, 0, 0, 0);
+      const av = c.actualDates && c.actualDates[key];
+      const ad = av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+      return { key, targetDate: td, actualDate: ad };
+    });
+    return { id: c.id, base, stages };
+  });
+
+  /* find the soonest upcoming next-FA-stage date → use as D+0 anchor */
+  const nextStageDates = openCases.map(c => {
+    const next = STAGE_NEXT[c.stage];
+    if (!next) return null;
+    const off = TARGET_OFFSETS.find(o => o.key === next.key);
+    if (!off) return null;
+    const [mm2, dd2] = c.returnDate.split('/');
+    const b2 = new Date(`${yr}-${mm2.padStart(2,'0')}-${dd2.padStart(2,'0')}T00:00:00`);
+    b2.setHours(0, 0, 0, 0);
+    const td2 = new Date(b2.getTime());
+    let added2 = 0;
+    while (added2 < off.n) { td2.setDate(td2.getDate() + 1); if (isWorkingDay(td2)) added2++; }
+    td2.setHours(0, 0, 0, 0);
+    return td2;
+  }).filter(Boolean);
+  const anchor = nextStageDates.length
+    ? new Date(Math.min(...nextStageDates.map(d => d.getTime())))
+    : today;
+
+  const allMs = [today.getTime()];
+  caseRows.forEach(r => r.stages.forEach(s => {
+    allMs.push(s.targetDate.getTime());
+    if (s.actualDate) allMs.push(s.actualDate.getTime());
+  }));
+  const dayMs  = 86400000;
+  const padDays = 2;
+  const originDay = new Date(Math.min(...allMs) - padDays * dayMs); originDay.setHours(0,0,0,0);
+  const endDay    = new Date(Math.max(...allMs) + padDays * dayMs); endDay.setHours(0,0,0,0);
+
+  /* compressed x-axis: non-working days get NONWD_RATIO of a working-day slot */
+  const NONWD_RATIO = 0.25;
+  const posMap = new Map();
+  let cumPos = 0;
+  const _d = new Date(originDay);
+  while (_d.getTime() <= endDay.getTime()) {
+    posMap.set(_d.getTime(), cumPos);
+    cumPos += isWorkingDay(_d) ? 1.0 : NONWD_RATIO;
+    _d.setDate(_d.getDate() + 1);
+  }
+  const totalUnits = cumPos || 1;
+
+  const cW  = W - PL - PR;
+  const toX = d => {
+    const k = new Date(d); k.setHours(0,0,0,0);
+    const p = posMap.get(k.getTime());
+    return PL + ((p ?? 0) / totalUnits) * cW;
+  };
+  const toY = i => PT + ROW_H * i + ROW_H / 2;
+  const axisY = PT + caseRows.length * ROW_H;
+
+  const C_arrived = '#DDB030'; /* amber — distinct from target/actual */
+
+  /* row guides + labels + Arrived marker */
+  caseRows.forEach((row, i) => {
+    const y  = toY(i);
+    const bx = toX(row.base);
+
+    /* row guide line */
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(W - PR, y); ctx.stroke();
+
+    /* Case ID label */
+    ctx.fillStyle = C.pri;
+    ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(row.id, PL - 6, y);
+
+    /* Arrived units marker */
+    if (bx >= PL && bx <= W - PR) {
+      /* vertical tick */
+      ctx.strokeStyle = C_arrived; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(bx, y - 8); ctx.lineTo(bx, y + 8); ctx.stroke();
+
+      /* small filled diamond */
+      const ad = 3;
+      ctx.fillStyle = C_arrived;
+      ctx.beginPath();
+      ctx.moveTo(bx, y - ad); ctx.lineTo(bx + ad, y);
+      ctx.lineTo(bx, y + ad); ctx.lineTo(bx - ad, y);
+      ctx.closePath(); ctx.fill();
+
+      /* "Arrived units" label — horizontal, centered on tick */
+      ctx.fillStyle = C_arrived;
+      ctx.globalAlpha = 0.95;
+      ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('Arrived units', bx, y - 10);
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  /* x-axis line */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
+  /* today line (label handled in WD tick section) */
+  const tx = toX(today);
+  if (tx >= PL && tx <= W - PR) {
+    ctx.strokeStyle = C.today; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(tx, PT); ctx.lineTo(tx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const GANTT_SHORT = {
+    initial: 'Init', i1: 'I(1)', i2: 'I(2)', i3: 'I(3)',
+    i4: 'I(4)', f4d: 'F-4D', f8d: 'F-8D',
+  };
+
+  /* stage markers */
+  caseRows.forEach((row, i) => {
+    const y = toY(i);
+    row.stages.forEach((s, si) => {
+      const ttx = toX(s.targetDate);
+      if (s.actualDate) {
+        const ax = toX(s.actualDate);
+        const lc = s.actualDate > s.targetDate ? C.delayed : C.done;
+        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke();
+        /* outer ring */
+        ctx.strokeStyle = lc; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
+        /* filled circle */
+        ctx.fillStyle = lc;
+        ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+      }
+      const ds = 4;
+      ctx.fillStyle = C.accent;
+      ctx.beginPath();
+      ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
+      ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
+      ctx.closePath(); ctx.fill();
+
+      /* stage label above diamond — skip if next stage shares same target date */
+      const nextTtx = si < row.stages.length - 1 ? toX(row.stages[si + 1].targetDate) : null;
+      const hiddenByNext = nextTtx !== null && Math.abs(ttx - nextTtx) < 2;
+      if (!hiddenByNext) {
+      ctx.save();
+      ctx.translate(ttx, y - ds - 2);
+      ctx.rotate(-Math.PI / 4);
+      ctx.fillStyle = C.pri;
+      ctx.globalAlpha = 0.9;
+      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(GANTT_SHORT[s.key], 1, 0);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      }
+    });
+  });
+
+  /* x-axis: working day ticks with ±N-from-today labels + date */
+  const tickStart = new Date(originDay); tickStart.setHours(0, 0, 0, 0);
+  const tickEnd   = new Date(endDay);    tickEnd.setHours(0, 0, 0, 0);
+
+  // count WDs from tickStart up to (not including) anchor (next stage date) → wi offset
+  let wdToAnchor = 0;
+  const counter = new Date(tickStart);
+  while (counter.getTime() < anchor.getTime()) {
+    if (isWorkingDay(counter)) wdToAnchor++;
+    counter.setDate(counter.getDate() + 1);
+  }
+
+  let wi = -wdToAnchor;
+  const cur = new Date(tickStart);
+  let lastLabelX = -999;
+
+  while (cur.getTime() <= tickEnd.getTime()) {
+    if (isWorkingDay(cur)) {
+      const x = toX(cur);
+      if (x >= PL && x <= W - PR) {
+        const isT = cur.getTime() === today.getTime();
+
+        // tick mark
+        ctx.strokeStyle = isT ? C.today : C.border;
+        ctx.lineWidth   = isT ? 1.5 : 0.5;
+        ctx.setLineDash([]);
+        ctx.beginPath();
+        ctx.moveTo(x, axisY);
+        ctx.lineTo(x, axisY + (isT ? 6 : 4));
+        ctx.stroke();
+
+        // labels: skip if too close to previous
+        if (x - lastLabelX >= 22) {
+          const wdLbl = wi === 0 ? 'D+0' : wi > 0 ? 'D+' + wi : 'D' + wi;
+          const dateLbl = (cur.getMonth() + 1) + '/' + String(cur.getDate()).padStart(2, '0');
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+
+          // WD offset line
+          ctx.fillStyle = isT ? C.today : C.pri;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText(wdLbl, x, axisY + 7);
+
+          // date line
+          ctx.fillStyle = C.pri;
+          ctx.font = '11px sans-serif';
+          ctx.fillText(dateLbl, x, axisY + 21);
+
+          lastLabelX = x;
+        }
+      }
+      wi++;
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+/* ── NEXT ACTION TABLE ───────────────────────────── */
+const STAGE_NEXT = {
+  'wait-device': { key: 'initial', label: 'Initial'      },
+  'initial':     { key: 'i1',      label: 'Interim (1)'  },
+  'interim-1':   { key: 'i2',      label: 'Interim (2)'  },
+  'interim-2':   { key: 'i3',      label: 'Interim (3)'  },
+  'interim-3':   { key: 'i4',      label: 'Interim (4)'  },
+  'interim-4':   { key: 'f4d',     label: 'Final 4D'     },
+  'final-4d':    { key: 'f8d',     label: 'Final 8D'     },
+};
+
+const STAGE_NEXT_CLS = {
+  'initial': 'sb-init', 'i1': 'sb-i123', 'i2': 'sb-i123',
+  'i3': 'sb-i123', 'i4': 'sb-i4', 'f4d': 'sb-f4d', 'f8d': 'sb-f8d',
+};
+
+function renderNextActions() {
+  const wrap = document.getElementById('next-actions');
+  if (!wrap) return;
+
+  const yr    = new Date().getFullYear();
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+
+  const rows = CASES
+    .filter(c => c.status === 'open' && c.returnDate && STAGE_NEXT[c.stage])
+    .map(c => {
+      const next = STAGE_NEXT[c.stage];
+      const off  = TARGET_OFFSETS.find(o => o.key === next.key);
+      const [mm, dd] = c.returnDate.split('/');
+      const base = new Date(`${yr}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
+      base.setHours(0, 0, 0, 0);
+      const td = new Date(base.getTime());
+      let added = 0;
+      while (added < off.n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+      td.setHours(0, 0, 0, 0);
+      const diffSign = td >= today ? 1 : -1;
+      let diffCount = 0;
+      const cursor = new Date(today.getTime());
+      while (true) {
+        cursor.setDate(cursor.getDate() + diffSign);
+        if (isWorkingDay(cursor)) diffCount++;
+        if (diffSign > 0 ? cursor >= td : cursor <= td) break;
+      }
+      const diff = td.getTime() === today.getTime() ? 0 : diffSign * diffCount;
+      return { c, next, td, diff };
+    })
+    .sort((a, b) => a.diff - b.diff);
+
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="na-empty">진행 중인 케이스 없음</div>';
+    return;
+  }
+
+  const fmtDate = d => (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0');
+  const dDayLabel = diff => {
+    if (diff === 0) return 'D-Day';
+    if (diff > 0)  return 'D-' + diff;
+    return 'D+' + Math.abs(diff);
+  };
+  const dDayCls = diff => diff < 0 ? 'overdue' : diff <= 3 ? 'soon' : 'on-time';
+
+  wrap.innerHTML = `
+    <table class="na-table">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>End Customer</th>
+          <th>Next FA Stage</th>
+          <th>Target Date</th>
+          <th style="text-align:right">D-Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(({ c, next, td, diff }) => `
+          <tr>
+            <td style="font-weight:600;color:var(--accent)">${c.id}</td>
+            <td style="color:var(--text-primary)">${c.name || '—'}</td>
+            <td><span class="sbadge ${STAGE_NEXT_CLS[next.key]}">${next.label}</span></td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-primary)">${fmtDate(td)}</td>
+            <td style="text-align:right"><span class="na-dday ${dDayCls(diff)}">${dDayLabel(diff)}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* live update when actual dates change */
+['detail-body', 'modal-overlay'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', e => {
+    if (e.target.classList.contains('tdate-actual')) {
+      renderGanttChart(e.target.id.startsWith('d-') ? 'd' : 'm');
+    }
+  });
+});
+
+/* ── DETAIL MODAL ───────────────────────────────── */
+let detailCaseId = null;
+
+function setDetailStatus(val) {
+  document.getElementById('d-status').value = val;
+  document.getElementById('d-stoggle-open').classList.toggle('open-active',   val === 'open');
+  document.getElementById('d-stoggle-close').classList.toggle('close-active', val === 'close');
+}
+
+function selectDetailStage(btn) {
+  document.querySelectorAll('#d-stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const selCls = STAGE_SEL_CLS[btn.dataset.stage] || '';
+  if (selCls) btn.classList.add(selCls);
+  document.getElementById('d-stage').value = btn.dataset.stage;
+}
+
+function openDetail(caseId) {
+  const c = CASES.find(x => x.id === caseId);
+  if (!c) return;
+  detailCaseId = caseId;
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  const sm = STATUS_META[c.status] || { label: c.status, cls: 's-waiting' };
+  const tm = getTimingStatus(c);
+
+  // header
+  document.getElementById('d-caseid-display').textContent = c.id;
+  document.getElementById('d-status-display').innerHTML =
+    `<span class="pill ${sm.cls}"><span class="pill-dot"></span>${sm.label}</span>`;
+  document.getElementById('d-timing-display').innerHTML =
+    `<span class="timing ${tm.cls}">${tm.label}</span>`;
+
+  // fields
+  document.getElementById('d-name').value     = c.name;
+  document.getElementById('d-opn').value      = c.opn || '';
+  document.getElementById('d-assignee').value = c.assignee;
+  document.getElementById('d-prio').value     = c.prio;
+  document.getElementById('d-issues').value   = c.issues;
+  document.getElementById('d-area').value          = c.area || '';
+  document.getElementById('d-fail-location').value = c.failLocation || '';
+  document.getElementById('d-fail-rate').value     = c.failRate != null ? c.failRate : '';
+  document.getElementById('d-failure-mode').value  = c.failureMode || '';
+
+  // Units return date & Target Date breakdown
+  const yr2 = new Date().getFullYear();
+  let returnDateIso = '';
+  if (c.returnDate) {
+    const [rm, rd] = c.returnDate.split('/');
+    returnDateIso = `${yr2}-${rm.padStart(2,'0')}-${rd.padStart(2,'0')}`;
+    document.getElementById('d-return-date').value = returnDateIso;
+  } else {
+    document.getElementById('d-return-date').value = '';
+  }
+  renderTargetDates('d', returnDateIso);
+  loadActualDates('d', c.actualDates);
+
+  // date MM/DD → YYYY-MM-DD
+  if (c.due) {
+    const [mo, d] = c.due.split('/');
+    const yr = new Date().getFullYear();
+    document.getElementById('d-due').value = `${yr}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  } else {
+    document.getElementById('d-due').value = '';
+  }
+
+  // status toggle
+  setDetailStatus(c.status);
+
+  // stage buttons
+  document.querySelectorAll('#d-stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const stageBtn = document.querySelector(`#d-stage-group .stage-btn[data-stage="${c.stage}"]`);
+  if (stageBtn) { const sc = STAGE_SEL_CLS[c.stage]; if (sc) stageBtn.classList.add(sc); }
+  document.getElementById('d-stage').value = c.stage || 'wait-device';
+
+  // timing badge
+  document.getElementById('d-timing-badge').innerHTML =
+    `<span class="timing ${tm.cls}">${tm.label}</span>`;
+
+  // enable / disable based on role
+  document.querySelectorAll('#detail-body input:not([type=hidden]), #detail-body select')
+    .forEach(el => { el.disabled = !isAdmin; });
+  document.querySelectorAll('#d-stage-group .stage-btn, #d-stoggle-open, #d-stoggle-close')
+    .forEach(b => { b.disabled = !isAdmin; });
+
+  // footer
+  document.getElementById('detail-footer').innerHTML = isAdmin
+    ? `<button class="btn-cancel" onclick="closeDetail()">취소</button>
+       <button class="btn-submit" onclick="saveDetail()">저장</button>`
+    : `<button class="btn-submit" onclick="closeDetail()">닫기</button>`;
+
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  detailCaseId = null;
+}
+
+function onDetailOverlay(e) {
+  if (e.target === document.getElementById('detail-overlay')) closeDetail();
+}
+
+function saveDetail() {
+  const c = CASES.find(x => x.id === detailCaseId);
+  if (!c) return;
+  const name     = document.getElementById('d-name').value.trim();
+  const assignee = document.getElementById('d-assignee').value.trim();
+  const due      = document.getElementById('d-due').value;
+  if (!name || !assignee) return;
+
+  if (due) {
+    const [, mo, d] = due.split('-');
+    c.due = mo + '/' + d;
+  }
+  c.name     = name;
+  c.opn      = document.getElementById('d-opn').value.trim();
+  c.assignee = assignee;
+  c.status   = document.getElementById('d-status').value;
+  c.stage    = document.getElementById('d-stage').value;
+  c.prio     = document.getElementById('d-prio').value;
+  c.issues   = parseInt(document.getElementById('d-issues').value) || 0;
+  c.area         = document.getElementById('d-area').value;
+  c.failLocation = document.getElementById('d-fail-location').value;
+  c.failRate     = parseFloat(document.getElementById('d-fail-rate').value) || null;
+  c.failureMode  = document.getElementById('d-failure-mode').value.trim();
+
+  const rv = document.getElementById('d-return-date').value;
+  c.returnDate  = rv ? (() => { const [,rm,rd] = rv.split('-'); return rm+'/'+rd; })() : '';
+  c.actualDates = readActualDates('d');
+
+  saveCases();
+  updateKPIs();
+  buildTable(document.querySelector('.ftab.active')?.dataset.filter || 'all');
+  renderOverallGantt();
+  renderNextActions();
+  closeDetail();
+}
+
+/* ── LOGOUT / LOGIN ─────────────────────────────── */
+function handleLogout() {
+  const screen = document.getElementById('login-screen');
+  const dash   = document.getElementById('dashboard');
+  dash.classList.remove('visible');
+  screen.style.display = 'flex';
+  screen.classList.remove('fade-out');
+  document.getElementById('inp-id').value = '';
+  document.getElementById('inp-pw').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  currentPct = 0;
+  currentUser = null;
+  CASES.length = 0;
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const id = document.getElementById('inp-id').value.trim();
+  const pw = document.getElementById('inp-pw').value;
+  const err = document.getElementById('login-error');
+  const matched = ACCOUNTS.find(a => a.id === id && a.pw === pw);
+  if (matched) {
+    currentUser = matched;
+    err.classList.remove('visible');
+    const screen = document.getElementById('login-screen');
+    const dash   = document.getElementById('dashboard');
+    screen.classList.add('fade-out');
+    dash.classList.add('visible');
+    screen.addEventListener('animationend', () => {
+      screen.style.display = 'none';
+      loadCases();
+      applyRole();
+      initTheme();
+      updateKPIs();
+      buildTable();
+      requestAnimationFrame(animateDonut);
+      setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
+    }, { once: true });
+  } else {
+    err.classList.add('visible');
+    document.getElementById('inp-pw').value = '';
+    document.getElementById('inp-pw').focus();
+  }
+}
+</script>
+
+</body>
+</html>
