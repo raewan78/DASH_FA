@@ -2144,7 +2144,7 @@ tbody tr:hover {
 const STORAGE_KEY = 'ft_cases_v1';
 const JB_KEY_STORE = 'ft_jb_key';
 const JB_BIN_STORE = 'ft_jb_bin';
-const JSONBIN_BIN_ID     = /* FT_JB_BIN_START */''/* FT_JB_BIN_END */;
+const JSONBIN_BIN_ID     = /* FT_JB_BIN_START */'6a462009f5f4af5e29529336'/* FT_JB_BIN_END */;
 const JSONBIN_MASTER_KEY = /* FT_JB_KEY_START */'$2a$10$rSG0Z.2fIo2rLEPCi16LqOygPyzapnBZPPVcIs0hmaEOClSAM/hwK'/* FT_JB_KEY_END */;
 
 function getJbKey() { return JSONBIN_MASTER_KEY || localStorage.getItem(JB_KEY_STORE) || ''; }
@@ -2158,10 +2158,34 @@ function setSyncStatus(state, msg) {
   el.style.display = msg ? '' : 'none';
 }
 
-async function fetchFromJsonBin() {
-  const binId = getBinId();
-  if (!binId) return null;
+async function autoDiscoverBinId() {
   const key = getJbKey();
+  if (!key) return '';
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b', {
+      headers: { 'X-Master-Key': key },
+      signal: controller.signal
+    });
+    if (!r.ok) return '';
+    const j = await r.json();
+    const bins = Array.isArray(j) ? j : (Array.isArray(j.record) ? j.record : []);
+    const found = bins.find(b => (b.snippetMeta?.name || b.name) === 'ft-cases');
+    if (found) {
+      const id = found._id || found.id || '';
+      if (id) localStorage.setItem(JB_BIN_STORE, id);
+      return id;
+    }
+  } catch(e) {}
+  return '';
+}
+
+async function fetchFromJsonBin() {
+  let binId = getBinId();
+  const key = getJbKey();
+  if (!binId && key) binId = await autoDiscoverBinId();
+  if (!binId) return null;
   const headers = { 'X-Bin-Meta': 'false' };
   if (key) headers['X-Master-Key'] = key;
   try {
