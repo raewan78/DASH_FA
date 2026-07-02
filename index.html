@@ -2196,10 +2196,12 @@ async function fetchFromJsonBin() {
     const timer = setTimeout(() => controller.abort(), 5000);
     const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers, signal: controller.signal, cache: 'no-store' });
     clearTimeout(timer);
-    if (!r.ok) return null;
+    console.log('[fetchFromJsonBin] status:', r.status, 'ok:', r.ok);
+    if (!r.ok) { console.log('[fetchFromJsonBin] not ok → null'); return null; }
     const j = await r.json();
+    console.log('[fetchFromJsonBin] j.record:', j.record, 'isArray:', Array.isArray(j.record));
     return Array.isArray(j.record) ? j.record : null;
-  } catch(e) { return null; }
+  } catch(e) { console.log('[fetchFromJsonBin] catch error:', e); return null; }
 }
 
 async function pushToJsonBin(data) {
