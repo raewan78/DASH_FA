@@ -1596,9 +1596,8 @@ tbody tr:hover {
   <!-- KPI -->
   <div class="kpi-row">
     <div class="kpi kpi-total">
-      <div class="kpi-label">총 케이스</div>
+      <div class="kpi-label">Total Case</div>
       <div class="kpi-value" id="cnt-total">2</div>
-      <div class="kpi-sub">Sprint 3 대상</div>
     </div>
     <div class="kpi kpi-prog">
       <div class="kpi-label">Open</div>
@@ -1613,12 +1612,10 @@ tbody tr:hover {
     <div class="kpi kpi-late">
       <div class="kpi-label">HIGH Priority</div>
       <div class="kpi-value" id="cnt-high">0</div>
-      <div class="kpi-sub">긴급 케이스</div>
     </div>
     <div class="kpi kpi-wait">
       <div class="kpi-label">Returned Units</div>
       <div class="kpi-value" id="cnt-units">2</div>
-      <div class="kpi-sub">총 반환 수량</div>
     </div>
   </div>
 
@@ -3006,7 +3003,8 @@ function renderGanttChart(prefix) {
   });
 
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const allMs = [base, today, ...rows.map(r => r.targetDate),
+  const isClosed = document.getElementById(prefix + '-status')?.value === 'close';
+  const allMs = [base, ...(isClosed ? [] : [today]), ...rows.map(r => r.targetDate),
     ...rows.filter(r => r.actualDate).map(r => r.actualDate)].map(d => d.getTime());
 
   const dayMs2  = 86400000;
@@ -3075,7 +3073,7 @@ function renderGanttChart(prefix) {
 
   /* today line */
   const tx = toX(today);
-  if (tx >= PL && tx <= W - PR) {
+  if (!isClosed && tx >= PL && tx <= W - PR) {
     ctx.strokeStyle = C.today; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(tx, PT); ctx.lineTo(tx, axisY); ctx.stroke();
     ctx.setLineDash([]);
@@ -3142,8 +3140,8 @@ function renderGanttChart(prefix) {
     if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(row.targetDate); }
   });
 
-  // also tick base and today if within range
-  [base, today].forEach(d => {
+  // also tick base and (if open) today
+  [base, ...(isClosed ? [] : [today])].forEach(d => {
     const ms = d.getTime();
     if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(d); }
   });
