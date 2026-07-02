@@ -3138,24 +3138,20 @@ function renderGanttChart(prefix) {
     ctx.closePath(); ctx.fill();
   });
 
-  /* x-axis: ticks at each Target date + today */
-  // compute WD offset from today for each target date
-  function wdBetween(a, b) {
-    const step = b >= a ? 1 : -1;
-    let count = 0, d = new Date(a);
-    d.setDate(d.getDate() + step);
-    while (step > 0 ? d.getTime() <= b.getTime() : d.getTime() >= b.getTime()) {
-      if (isWorkingDay(d)) count += step;
-      d.setDate(d.getDate() + step);
-    }
-    return count;
-  }
-
-  // special date sets for styling
+  /* x-axis: ticks for every working day; D+N relative to today (open) or arrived (closed) */
   const targetMsSet = new Set();
   rows.forEach(row => { if (toX(row.targetDate) !== null) targetMsSet.add(row.targetDate.getTime()); });
 
-  // draw a tick for every working day in range; label only where space allows
+  // counter-based D+N: wd_axis = 0 at reference point (today for open, arrived for closed)
+  const axisRef = isClosed ? base : today;
+  let wdToRef = 0;
+  const _cntRef = new Date(originDay2);
+  while (_cntRef.getTime() < axisRef.getTime()) {
+    if (isWorkingDay(_cntRef)) wdToRef++;
+    _cntRef.setDate(_cntRef.getDate() + 1);
+  }
+  let wd_axis = -wdToRef;
+
   let lastLX = -999;
   const cur = new Date(originDay2);
   while (cur.getTime() <= endDay2.getTime()) {
@@ -3173,9 +3169,9 @@ function renderGanttChart(prefix) {
         ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + (isT || isBase || isTgt ? 5 : 3)); ctx.stroke();
 
         if (x - lastLX >= 22) {
-          const ref   = isClosed ? base : today;
-          const wd    = wdBetween(ref, cur);
-          const wdLbl = isT ? 'D-0' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
+          const wdLbl = wd_axis === 0
+            ? (isClosed ? 'D+0' : 'D-0')
+            : wd_axis > 0 ? 'D+' + wd_axis : 'D' + wd_axis;
           const dateLbl = (cur.getMonth()+1) + '/' + String(cur.getDate()).padStart(2,'0');
           ctx.textAlign = 'center'; ctx.textBaseline = 'top';
           ctx.fillStyle = isT ? C.today : isBase ? C.arrived : isTgt ? C.accent : C.muted;
@@ -3187,6 +3183,7 @@ function renderGanttChart(prefix) {
           lastLX = x;
         }
       }
+      wd_axis++;
     }
     cur.setDate(cur.getDate() + 1);
   }
