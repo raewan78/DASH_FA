@@ -874,6 +874,57 @@ td {
 .data-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 #data-actions { display: none; align-items: center; gap: 8px; }
 
+/* ── DATA MODAL ─────────────────────────────────── */
+#data-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+#data-modal-overlay.open { display: flex; }
+.data-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: min(560px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.data-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.data-modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.data-modal-body  { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.data-modal-body textarea {
+  width: 100%; height: 220px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.data-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.data-modal-note { font-size: 11px; color: var(--text-muted); }
+
 /* ── ADD CASE BUTTON ────────────────────────────── */
 .add-case-row {
   padding: 12px 16px;
@@ -1461,9 +1512,8 @@ tbody tr:hover {
     <span>기준일: 2026-06-30</span>
     <span id="role-tag" style="font-size:10px;font-weight:700;letter-spacing:.1em;"></span>
     <div id="data-actions">
-      <button class="data-btn" onclick="exportData()" title="케이스 데이터를 JSON 파일로 내보내기">⬇ Export</button>
-      <button class="data-btn" onclick="document.getElementById('import-file').click()" title="JSON 파일에서 케이스 데이터 불러오기">⬆ Import</button>
-      <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)" />
+      <button class="data-btn" onclick="openExportModal()" title="케이스 데이터 내보내기">⬇ Export</button>
+      <button class="data-btn" onclick="openImportModal()" title="케이스 데이터 불러오기">⬆ Import</button>
     </div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환"></button>
     <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
@@ -1568,6 +1618,24 @@ tbody tr:hover {
 </main>
 
 </div><!-- /dashboard -->
+
+<!-- EXPORT / IMPORT MODAL -->
+<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()">
+  <div class="data-modal">
+    <div class="data-modal-header">
+      <span class="data-modal-title" id="data-modal-title">Export</span>
+      <button class="modal-close" onclick="closeDataModal()">×</button>
+    </div>
+    <div class="data-modal-body">
+      <span class="data-modal-note" id="data-modal-note"></span>
+      <textarea id="data-modal-ta" spellcheck="false"></textarea>
+    </div>
+    <div class="data-modal-footer">
+      <button class="btn-cancel" onclick="closeDataModal()">닫기</button>
+      <button class="btn-submit" id="data-modal-action">복사</button>
+    </div>
+  </div>
+</div>
 
 <!-- CASE 상세 / 수정 MODAL -->
 <div id="detail-overlay" onclick="onDetailOverlay(event)">
@@ -2332,39 +2400,56 @@ function applyRole() {
   if (logoutBtn) logoutBtn.textContent = isAdmin ? 'Logout' : '← Admin Login';
 }
 
-function exportData() {
+function openExportModal() {
   const data = { version: 'ft_cases_v1', exportedAt: new Date().toISOString(), cases: CASES };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  const ts   = new Date().toISOString().slice(0,10);
-  a.href = url; a.download = 'ft_cases_' + ts + '.json';
-  a.click();
-  URL.revokeObjectURL(url);
+  const json = JSON.stringify(data, null, 2);
+  document.getElementById('data-modal-title').textContent = '⬇ Export — 데이터 내보내기';
+  document.getElementById('data-modal-note').textContent  = '아래 JSON을 복사하여 보관하세요.';
+  document.getElementById('data-modal-ta').value          = json;
+  document.getElementById('data-modal-ta').readOnly       = true;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '📋 복사';
+  btn.onclick = () => {
+    navigator.clipboard.writeText(json).then(() => {
+      btn.textContent = '✓ 복사됨';
+      setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+    }).catch(() => {
+      document.getElementById('data-modal-ta').select();
+      document.execCommand('copy');
+      btn.textContent = '✓ 복사됨';
+      setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+    });
+  };
+  document.getElementById('data-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('data-modal-ta').select(), 50);
 }
 
-function importData(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
+function openImportModal() {
+  document.getElementById('data-modal-title').textContent = '⬆ Import — 데이터 불러오기';
+  document.getElementById('data-modal-note').textContent  = '내보낸 JSON을 아래에 붙여넣고 [불러오기]를 누르세요.';
+  document.getElementById('data-modal-ta').value          = '';
+  document.getElementById('data-modal-ta').readOnly       = false;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '⬆ 불러오기';
+  btn.onclick = () => {
     try {
-      const parsed = JSON.parse(ev.target.result);
+      const parsed   = JSON.parse(document.getElementById('data-modal-ta').value);
       const imported = Array.isArray(parsed) ? parsed
         : Array.isArray(parsed.cases) ? parsed.cases : null;
-      if (!imported) { alert('올바른 FT Cases JSON 파일이 아닙니다.'); return; }
+      if (!imported) { alert('올바른 FT Cases JSON이 아닙니다.'); return; }
       if (!confirm(`${imported.length}건을 불러옵니다. 기존 데이터를 덮어씁니다. 계속할까요?`)) return;
       CASES.length = 0;
       imported.forEach(c => CASES.push(c));
-      saveCases();
-      updateKPIs();
-      buildTable('all');
-      renderOverallGantt();
-      renderNextActions();
-    } catch { alert('파일 파싱 오류: 유효한 JSON 파일인지 확인하세요.'); }
-    e.target.value = '';
+      saveCases(); updateKPIs(); buildTable('all'); renderOverallGantt(); renderNextActions();
+      closeDataModal();
+    } catch { alert('JSON 파싱 오류: 올바른 형식인지 확인하세요.'); }
   };
-  reader.readAsText(file);
+  document.getElementById('data-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('data-modal-ta').focus(), 50);
+}
+
+function closeDataModal() {
+  document.getElementById('data-modal-overlay').classList.remove('open');
 }
 
 /* ── MODAL ──────────────────────────────────────── */
