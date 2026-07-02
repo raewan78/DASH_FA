@@ -3143,46 +3143,44 @@ function renderGanttChart(prefix) {
     return count;
   }
 
-  // collect unique target-date positions (deduplicate same-day overlaps)
-  const tickDates = [];
-  const seenMs = new Set();
-  rows.forEach(row => {
-    const ms = row.targetDate.getTime();
-    if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(row.targetDate); }
-  });
+  // special date sets for styling
+  const targetMsSet = new Set();
+  rows.forEach(row => { if (toX(row.targetDate) !== null) targetMsSet.add(row.targetDate.getTime()); });
 
-  // also tick base and (if open) today
-  [base, ...(isClosed ? [] : [today])].forEach(d => {
-    const ms = d.getTime();
-    if (!seenMs.has(ms)) { seenMs.add(ms); tickDates.push(d); }
-  });
-
+  // draw a tick for every working day in range; label only where space allows
   let lastLX = -999;
-  tickDates.sort((a, b) => a - b).forEach(d => {
-    const x = toX(d);
-    if (x < PL || x > W - PR) return;
-    const isT = d.getTime() === today.getTime();
-    const isBase = d.getTime() === base.getTime();
+  const cur = new Date(originDay2);
+  while (cur.getTime() <= endDay2.getTime()) {
+    if (isWorkingDay(cur)) {
+      const x = toX(cur);
+      if (x !== null && x >= PL && x <= W - PR) {
+        const ms     = cur.getTime();
+        const isT    = ms === today.getTime();
+        const isBase = ms === base.getTime();
+        const isTgt  = !isT && !isBase && targetMsSet.has(ms);
 
-    ctx.strokeStyle = isT ? C.today : isBase ? C.arrived : C.border;
-    ctx.lineWidth   = (isT || isBase) ? 1.5 : 0.8;
-    ctx.setLineDash([]);
-    ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + 5); ctx.stroke();
+        ctx.strokeStyle = isT ? C.today : isBase ? C.arrived : C.border;
+        ctx.lineWidth   = (isT || isBase) ? 1.5 : 0.5;
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + (isT || isBase || isTgt ? 5 : 3)); ctx.stroke();
 
-    if (x - lastLX >= 22) {
-      const wd  = wdBetween(today, d);
-      const wdLbl   = isT ? 'Today' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
-      const dateLbl = (d.getMonth()+1)+'/'+String(d.getDate()).padStart(2,'0');
-      ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-      ctx.fillStyle = isT ? C.today : isBase ? C.arrived : C.muted;
-      ctx.font = (isT || isBase ? 'bold ' : '') + '9px sans-serif';
-      ctx.fillText(wdLbl, x, axisY + 7);
-      ctx.fillStyle = isT ? C.today : C.muted;
-      ctx.font = '8px sans-serif';
-      ctx.fillText(dateLbl, x, axisY + 18);
-      lastLX = x;
+        if (x - lastLX >= 22) {
+          const wd    = wdBetween(today, cur);
+          const wdLbl = isT ? 'Today' : wd === 0 ? 'D+0' : wd > 0 ? 'D+' + wd : 'D' + wd;
+          const dateLbl = (cur.getMonth()+1) + '/' + String(cur.getDate()).padStart(2,'0');
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillStyle = isT ? C.today : isBase ? C.arrived : isTgt ? C.accent : C.muted;
+          ctx.font = (isT || isBase || isTgt ? 'bold ' : '') + '9px sans-serif';
+          ctx.fillText(wdLbl, x, axisY + 7);
+          ctx.fillStyle = isT ? C.today : C.muted;
+          ctx.font = '8px sans-serif';
+          ctx.fillText(dateLbl, x, axisY + 18);
+          lastLX = x;
+        }
+      }
     }
-  });
+    cur.setDate(cur.getDate() + 1);
+  }
 }
 
 /* ── OVERALL GANTT ──────────────────────────────── */
