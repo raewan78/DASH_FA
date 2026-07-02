@@ -1,0 +1,3897 @@
+<html lang="ko" class="light"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>FT CASE Dashboard</title>
+<script>
+// Detect server-side updates via ETag and auto-reload stale cached pages
+(function() {
+  try {
+    fetch(location.href, { method: 'HEAD', cache: 'no-store' })
+      .then(function(r) {
+        var tag = r.headers.get('etag') || r.headers.get('last-modified') || '';
+        if (!tag) return;
+        var stored = sessionStorage.getItem('_ftver');
+        if (stored && stored !== tag) {
+          sessionStorage.setItem('_ftver', tag);
+          location.reload();
+        } else {
+          sessionStorage.setItem('_ftver', tag);
+        }
+      })
+      .catch(function() {});
+  } catch(e) {}
+})();
+</script>
+<style>
+:root {
+  --bg:              #080C12;
+  --surface:         #0E1520;
+  --surface-raised:  #152030;
+  --surface-hover:   #1A2840;
+  --border:          #1D2D40;
+  --border-subtle:   #111C2A;
+
+  --text-primary:    #D9E8F8;
+  --text-secondary:  #6E8FAD;
+  --text-muted:      #38536B;
+
+  --accent:          #1A8FE3;
+  --accent-dim:      rgba(26, 143, 227, 0.10);
+  --accent-glow:     rgba(26, 143, 227, 0.18);
+
+  --done:            #22C78A;
+  --done-bg:         rgba(34, 199, 138, 0.09);
+  --progress:        #1A8FE3;
+  --progress-bg:     rgba(26, 143, 227, 0.09);
+  --delayed:         #F25069;
+  --delayed-bg:      rgba(242, 80, 105, 0.09);
+  --waiting:         #4A5C6E;
+  --waiting-bg:      rgba(74, 92, 110, 0.12);
+
+  --prio-h:          #F09040;
+  --prio-h-bg:       rgba(240, 144, 64, 0.10);
+  --prio-m:          #DDB030;
+  --prio-m-bg:       rgba(221, 176, 48, 0.10);
+  --prio-l:          #4A5C6E;
+  --prio-l-bg:       rgba(74, 92, 110, 0.10);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', '맑은 고딕', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── HEADER ────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-left { display: flex; align-items: center; gap: 14px; }
+
+.sys-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px solid rgba(26,143,227,0.22);
+  padding: 3px 9px;
+  border-radius: 3px;
+}
+
+.header h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+.kst-clock {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── MAIN ───────────────────────────────────────── */
+.main {
+  padding: 24px 32px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+/* ── KPI CARDS ──────────────────────────────────── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.kpi-total::before { background: var(--accent); }
+.kpi-done::before  { background: var(--done); }
+.kpi-prog::before  { background: var(--progress); }
+.kpi-late::before  { background: var(--delayed); }
+.kpi-wait::before  { background: var(--waiting); }
+
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.kpi-value {
+  font-size: 36px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.kpi-total .kpi-value { color: var(--text-primary); }
+.kpi-done  .kpi-value { color: var(--done); }
+.kpi-prog  .kpi-value { color: var(--progress); }
+.kpi-late  .kpi-value { color: var(--delayed); }
+.kpi-wait  .kpi-value { color: var(--waiting); }
+
+.kpi-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ── CONTENT LAYOUT ─────────────────────────────── */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timeline-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.timeline-panel .panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.timeline-body {
+  padding: 10px 20px 14px;
+}
+
+/* ── LIGHT MODE ─────────────────────────────────── */
+html.light {
+  --bg:              #EEF3F8;
+  --surface:         #FFFFFF;
+  --surface-raised:  #F4F8FC;
+  --surface-hover:   #E6EEF6;
+  --border:          #C2D4E4;
+  --border-subtle:   #D8E6F0;
+  --text-primary:    #0D1C2B;
+  --text-secondary:  #3E5C78;
+  --text-muted:      #7A9AB5;
+  --accent:          #1168B8;
+  --accent-dim:      rgba(17,104,184,0.10);
+  --accent-glow:     rgba(17,104,184,0.16);
+  --done:            #0A8E60;
+  --done-bg:         rgba(10,142,96,0.10);
+  --progress:        #1168B8;
+  --progress-bg:     rgba(17,104,184,0.10);
+  --delayed:         #C22040;
+  --delayed-bg:      rgba(194,32,64,0.10);
+  --waiting:         #5A7A96;
+  --waiting-bg:      rgba(90,122,150,0.12);
+  --prio-h:          #C05A0A;
+  --prio-h-bg:       rgba(192,90,10,0.10);
+  --prio-m:          #9A7008;
+  --prio-m-bg:       rgba(154,112,8,0.10);
+  --prio-l:          #5A7A96;
+  --prio-l-bg:       rgba(90,122,150,0.10);
+}
+
+/* ── THEME TOGGLE ────────────────────────────────── */
+.theme-toggle {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  line-height: 1;
+  transition: background 0.15s, border-color 0.15s;
+  padding: 0;
+}
+.theme-toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--accent);
+}
+
+/* ── PANEL ──────────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ── FILTER TABS ────────────────────────────────── */
+.filter-tabs { display: flex; gap: 3px; }
+
+.ftab {
+  padding: 3px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.ftab:hover { background: var(--surface-raised); color: var(--text-secondary); }
+.ftab.active { background: var(--accent-dim); color: var(--accent); }
+.ftab:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* ── TABLE ──────────────────────────────────────── */
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+thead th {
+  padding: 9px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  background: var(--surface);
+  cursor: pointer;
+  user-select: none;
+}
+
+thead th:hover { color: var(--text-secondary); }
+
+thead th.sort-asc::after  { content: ' ↑'; color: var(--accent); }
+thead th.sort-desc::after { content: ' ↓'; color: var(--accent); }
+
+tbody tr {
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background 0.1s;
+  cursor: pointer;
+}
+
+tbody tr:hover { background: var(--surface-hover); }
+
+tbody tr.row-hidden { display: none; }
+
+td {
+  padding: 11px 16px;
+  vertical-align: middle;
+}
+
+.td-id {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+  letter-spacing: 0.04em;
+}
+
+.td-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+
+.td-date {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.td-date.overdue { color: var(--delayed); font-weight: 600; }
+
+/* STATUS PILL */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.pill-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.s-done     { background: var(--done-bg);     color: var(--done); }
+.s-done     .pill-dot { background: var(--done); }
+.s-progress { background: var(--progress-bg); color: var(--progress); }
+.s-progress .pill-dot { background: var(--progress); }
+.s-delayed  { background: var(--delayed-bg);  color: var(--delayed); }
+.s-delayed  .pill-dot { background: var(--delayed); animation: blink 1.4s infinite; }
+.s-waiting    { background: var(--waiting-bg);  color: var(--waiting); }
+.s-waiting    .pill-dot { background: var(--waiting); }
+.s-interim    { background: rgba(26,143,227,0.09); color: #4DB3F5; }
+.s-interim    .pill-dot { background: #4DB3F5; }
+.s-interim4   { background: rgba(240,144,64,0.09); color: var(--prio-h); }
+.s-interim4   .pill-dot { background: var(--prio-h); }
+.s-final4d    { background: rgba(26,143,227,0.09); color: var(--accent); }
+.s-final4d    .pill-dot { background: var(--accent); }
+.s-final8d    { background: rgba(240,144,64,0.09); color: var(--prio-h); }
+.s-final8d    .pill-dot { background: var(--prio-h); }
+
+/* PRIORITY */
+.prio {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 2px 6px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+.p-h { color: var(--prio-h); background: var(--prio-h-bg); }
+.p-m { color: var(--prio-m); background: var(--prio-m-bg); }
+.p-l { color: var(--prio-l); background: var(--prio-l-bg); }
+
+/* PROGRESS */
+.prog-cell { min-width: 130px; }
+
+.prog-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.prog-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prog-pct {
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 38px;
+  text-align: right;
+  color: var(--text-secondary);
+}
+
+/* ISSUE BADGE */
+.issue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.issue-y { background: var(--delayed-bg); color: var(--delayed); }
+.issue-n { color: var(--text-muted); }
+
+/* ── SIDE PANELS ────────────────────────────────── */
+.side { display: flex; flex-direction: column; gap: 14px; }
+
+/* OVERALL PROGRESS */
+.chart-wrap {
+  padding: 24px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.donut-outer {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin-bottom: 18px;
+}
+
+.donut-inner {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-pct {
+  font-size: 30px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.donut-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+/* OVERALL GANTT */
+.overall-gantt-wrap {
+  width: 100%;
+  padding: 4px 16px 14px;
+  box-sizing: border-box;
+}
+.overall-gantt-hdr {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+#overall-gantt { width: 100%; display: block; }
+
+/* NEXT ACTION */
+.next-action-wrap {
+  margin-top: 14px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.next-action-title {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.na-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.na-table th {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 0 10px 6px 0;
+  border-bottom: 1px solid var(--border);
+}
+.na-table td {
+  padding: 7px 10px 7px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+.na-table tr:last-child td { border-bottom: none; }
+.na-dday { font-variant-numeric: tabular-nums; font-weight: 600; font-size: 12px; }
+.na-dday.on-time  { color: var(--done); }
+.na-dday.overdue  { color: var(--delayed); }
+.na-dday.soon     { color: var(--prio-h); }
+.na-empty { font-size: 11px; color: var(--text-muted); padding: 8px 0; }
+
+/* BREAKDOWN */
+.breakdown {
+  padding: 4px 20px 20px;
+}
+
+.bk-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.bk-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.bk-label {
+  font-size: 12px;
+  color: var(--text-secondary);
+  flex: 0 0 52px;
+}
+
+.bk-track {
+  flex: 1;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.bk-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+
+.bk-count {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-primary);
+  min-width: 18px;
+  text-align: right;
+}
+
+/* ACTIVITY */
+.activity {
+  padding: 14px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.act-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+.act-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-weight: 700;
+}
+
+.act-done    { background: var(--done-bg);     color: var(--done); }
+.act-prog    { background: var(--progress-bg); color: var(--progress); }
+.act-issue   { background: var(--delayed-bg);  color: var(--delayed); }
+
+.act-text strong { color: var(--text-primary); font-weight: 500; }
+
+.act-time {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  padding-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── LOGIN SCREEN ───────────────────────────────── */
+#login-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.login-box {
+  width: 360px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.login-top {
+  padding: 32px 32px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.login-sys {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.login-title {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.login-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.login-form {
+  padding: 28px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.field input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field input::placeholder { color: var(--text-muted); }
+
+.field input:focus {
+  border-color: var(--accent);
+  background: var(--surface-hover);
+}
+
+.login-error {
+  font-size: 12px;
+  color: var(--delayed);
+  background: var(--delayed-bg);
+  border: 1px solid rgba(242,80,105,0.2);
+  border-radius: 3px;
+  padding: 8px 12px;
+  display: none;
+}
+
+.login-error.visible { display: block; }
+
+.login-btn {
+  margin-top: 4px;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.login-btn:hover { opacity: 0.88; }
+.login-btn:active { opacity: 0.75; }
+.login-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.guest-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  padding: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.guest-btn:hover { background: var(--surface-hover); color: var(--accent); border-color: var(--accent); }
+
+.login-footer {
+  padding: 14px 32px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+/* Fade out login, fade in dashboard */
+#login-screen.fade-out {
+  animation: fadeOut 0.4s ease forwards;
+}
+
+#dashboard {
+  display: none;
+}
+
+#dashboard.visible { display: block; }
+
+@keyframes fadeOut {
+  to { opacity: 0; pointer-events: none; }
+}
+
+/* ── SPRINT PROGRESS BAR at bottom */
+
+.logout-btn {
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+
+.logout-btn:hover {
+  color: var(--delayed);
+  border-color: rgba(242, 80, 105, 0.4);
+  background: var(--delayed-bg);
+}
+
+.logout-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── EXPORT / IMPORT BUTTONS ────────────────────── */
+.data-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  letter-spacing: .03em;
+}
+.data-btn:hover { background: var(--surface-hover); border-color: var(--accent); color: var(--accent); }
+.data-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#data-actions { display: none; align-items: center; gap: 8px; }
+#sync-status { font-size: 10px; font-weight: 600; letter-spacing: 0.05em; color: var(--text-muted); white-space: nowrap; display: none; }
+#sync-status.syncing { color: var(--accent); }
+#sync-status.ok      { color: #4caf50; }
+#sync-status.err     { color: var(--prio-h); }
+.settings-btn { background: none; border: 1px solid var(--border); border-radius: 4px; color: var(--text-secondary); cursor: pointer; font-size: 14px; padding: 3px 7px; display: none; }
+.settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── SETTINGS MODAL ─────────────────────────────── */
+#settings-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2100;
+  align-items: center;
+  justify-content: center;
+}
+#settings-overlay.open { display: flex; }
+.settings-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: min(460px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.settings-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.settings-modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+.settings-field { display: flex; flex-direction: column; gap: 5px; }
+.settings-field label { font-size: 11px; font-weight: 600; color: var(--text-muted); letter-spacing: 0.07em; text-transform: uppercase; }
+.settings-field input {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 7px 10px;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: monospace;
+}
+.settings-field input:focus { outline: none; border-color: var(--accent); }
+.settings-hint { font-size: 10px; color: var(--text-muted); }
+.settings-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+#jb-test-result { font-size: 11px; margin-top: 4px; min-height: 14px; }
+
+/* ── DATA MODAL ─────────────────────────────────── */
+#data-modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+#data-modal-overlay.open { display: flex; }
+.data-modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  width: min(560px, 92vw);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+.data-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.data-modal-title { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+.data-modal-body  { padding: 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+.data-modal-body textarea {
+  width: 100%; height: 220px;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--text-primary);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+.data-modal-footer {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-top: 1px solid var(--border);
+}
+.data-modal-note { font-size: 11px; color: var(--text-muted); }
+
+/* ── ADD CASE BUTTON ────────────────────────────── */
+.add-case-row {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border);
+}
+
+.add-case-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--accent-dim);
+  border: 1px dashed rgba(26, 143, 227, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  width: 100%;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.add-case-btn:hover {
+  background: var(--accent-glow);
+  border-color: rgba(26, 143, 227, 0.6);
+}
+
+.add-case-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.add-case-btn .plus {
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+/* ── MODAL ──────────────────────────────────────── */
+#modal-overlay,
+#detail-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 8, 14, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+#modal-overlay  { z-index: 8000; }
+#detail-overlay { z-index: 8001; }
+
+#modal-overlay.open,
+#detail-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  width: 95vw;
+  max-width: 95vw;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  transform: translateY(12px);
+  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+#modal-overlay.open .modal,
+#detail-overlay.open .modal { transform: translateY(0); }
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  border-radius: 3px;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  line-height: 1;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+
+.modal-close:hover { background: var(--surface-raised); color: var(--text-primary); }
+.modal-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.modal-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.modal-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.mfield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mfield.full { grid-column: 1 / -1; }
+
+.mfield label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.mfield input,
+.mfield select {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 9px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.mfield input[type="checkbox"] {
+  appearance: auto;
+  -webkit-appearance: auto;
+  padding: 0;
+  background: none;
+  border: none;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.mfield input::placeholder { color: var(--text-muted); }
+
+.mfield input:focus,
+.mfield select:focus { border-color: var(--accent); background: var(--surface-hover); }
+
+.select-wrap {
+  position: relative;
+}
+
+.select-wrap::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.mfield select { padding-right: 28px; cursor: pointer; }
+
+.mfield select option {
+  background: var(--surface-raised);
+  color: var(--text-primary);
+}
+
+/* progress range */
+.range-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.range-wrap input[type="range"] {
+  flex: 1;
+  padding: 0;
+  height: 4px;
+  cursor: pointer;
+  accent-color: var(--accent);
+  background: var(--border);
+  border-radius: 2px;
+  border: none;
+}
+
+.range-val {
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  min-width: 38px;
+  text-align: right;
+}
+
+.modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-delete {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 4px;
+  border: 1px solid var(--delayed);
+  background: transparent;
+  color: var(--delayed);
+  cursor: pointer;
+  margin-right: auto;
+}
+.btn-delete:hover { background: var(--delayed-bg); }
+
+.btn-cancel {
+  padding: 8px 18px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s, color 0.12s;
+}
+
+.btn-cancel:hover { background: var(--surface-raised); color: var(--text-primary); }
+
+.btn-submit {
+  padding: 8px 22px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  background: var(--accent);
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.btn-submit:hover { opacity: 0.85; }
+.btn-submit:focus-visible,
+.btn-cancel:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── STAGE SELECTOR ─────────────────────────────── */
+.stage-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.stage-btn {
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+
+.stage-btn:hover { border-color: var(--accent); color: var(--accent); }
+.stage-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.stage-btn.sel-wait    { background:rgba(74,92,110,0.18);  border-color:#4A5C6E; color:#8AA8C0; }
+.stage-btn.sel-initial { background:rgba(56,189,248,0.12); border-color:#38BDF8; color:#38BDF8; }
+.stage-btn.sel-i1,
+.stage-btn.sel-i2,
+.stage-btn.sel-i3      { background:rgba(77,179,245,0.12); border-color:#4DB3F5; color:#4DB3F5; }
+.stage-btn.sel-i4      { background:rgba(240,144,64,0.12); border-color:var(--prio-h); color:var(--prio-h); }
+.stage-btn.sel-f4d     { background:rgba(26,143,227,0.12); border-color:var(--accent); color:var(--accent); }
+.stage-btn.sel-f8d     { background:rgba(240,144,64,0.12); border-color:var(--prio-h); color:var(--prio-h); }
+
+/* ── STATUS TOGGLE (Open / Close) ───────────────── */
+.status-toggle {
+  display: flex;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.stoggle {
+  flex: 1;
+  padding: 9px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: var(--surface-raised);
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.stoggle + .stoggle { border-left: 1px solid var(--border); }
+.stoggle:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.stoggle.open-active  { background: var(--progress-bg); color: var(--progress); }
+.stoggle.close-active { background: var(--done-bg);     color: var(--done);     }
+
+/* ── STAGE BADGE (table) ────────────────────────── */
+.sbadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.sb-wait  { background:rgba(74,92,110,0.14);  color:#8AA8C0; }
+.sb-init  { background:rgba(56,189,248,0.10); color:#38BDF8; }
+.sb-i123  { background:rgba(77,179,245,0.10); color:#4DB3F5; }
+.sb-i4    { background:rgba(240,144,64,0.09); color:var(--prio-h); }
+.sb-f4d   { background:rgba(26,143,227,0.10); color:var(--accent); }
+.sb-f8d   { background:rgba(240,144,64,0.09); color:var(--prio-h); }
+
+/* ── ROW HOVER INDICATOR ────────────────────────── */
+tbody tr:hover {
+  background: var(--surface-hover);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+/* ── DETAIL MODAL ───────────────────────────────── */
+.detail-modal { width: 95vw; max-width: 95vw; }
+
+.two-col-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.modal-lr {
+  display: grid;
+  grid-template-columns: 1fr 1.9fr;
+  gap: 24px;
+  align-items: start;
+}
+
+.modal-left-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-right-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-right-top {
+  display: block;
+}
+
+.target-gantt-row {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.target-gantt-row > .mfield.gantt-mfield {
+  width: 100%;
+}
+
+/* ── TARGET DATE BREAKDOWN ──────────────────────── */
+.target-dates {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.tdate-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 14px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  transition: background 0.1s;
+}
+
+.tdate-row:last-child { border-bottom: none; }
+.tdate-row:hover { background: var(--surface-hover); }
+
+.tdate-label {
+  flex: 1;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tdate-val {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 64px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tdate-val.empty { color: var(--text-muted); font-weight: 400; }
+
+.tdate-offset {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  min-width: 100px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.tdate-head {
+  display: flex;
+  align-items: center;
+  padding: 4px 14px;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-raised);
+}
+.tdate-head-spacer { flex: 1; }
+.tdate-head-col {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.tdate-actual {
+  width: 120px;
+  flex-shrink: 0;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  padding: 3px 8px;
+  font-size: 11px;
+  color: var(--text-primary);
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.tdate-actual:focus { border-color: var(--accent); background: var(--surface-hover); }
+.tdate-actual:disabled {
+  color: var(--text-secondary);
+  border-color: transparent;
+  background: transparent;
+  cursor: default;
+  opacity: 1;
+}
+
+.detail-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.detail-head-left .td-id {
+  font-size: 15px;
+  letter-spacing: 0.06em;
+}
+
+/* viewer read-only fields */
+#detail-body input:disabled,
+#detail-body select:disabled {
+  opacity: 1;
+  color: var(--text-primary);
+  border-color: var(--border-subtle);
+  background: var(--surface);
+  cursor: default;
+}
+
+#detail-body .stage-btn:disabled { pointer-events: none; opacity: 0.9; }
+#detail-body .stoggle:disabled   { pointer-events: none; opacity: 0.9; }
+
+/* ── TIMING BADGE ───────────────────────────────── */
+.timing {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.timing::before {
+  content: '';
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.t-ontime { background: rgba(34,199,138,0.09); color: var(--done); }
+.t-ontime::before { background: var(--done); }
+
+.t-delay  { background: rgba(242,80,105,0.09); color: var(--delayed); }
+.t-delay::before  { background: var(--delayed); animation: blink 1.4s infinite; }
+
+.t-closed { background: rgba(74,92,110,0.12);  color: var(--text-muted); }
+.t-closed::before { background: var(--text-muted); }
+
+/* ── GANTT CHART ────────────────────────────────── */
+.gantt-wrap {
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--surface-raised);
+  overflow: hidden;
+}
+
+.gantt-wrap canvas {
+  display: block;
+  width: 100%;
+}
+</style>
+<script>(function(){if(localStorage.getItem('ft_theme')==='light')document.documentElement.classList.add('light');}());</script>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen" style="display: flex;">
+  <div class="login-box">
+    <div class="login-top">
+      <div class="login-sys">QA System</div>
+      <div class="login-title">FT CASE Dashboard</div>
+      <div class="login-sub">Access restricted to authorized users.</div>
+    </div>
+    <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
+      <div class="field">
+        <label for="inp-id">ID</label>
+        <input id="inp-id" type="text" placeholder="Enter ID" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="inp-pw">Password</label>
+        <input id="inp-pw" type="password" placeholder="Enter password" autocomplete="current-password">
+      </div>
+      <div class="login-error" id="login-error">Incorrect ID or password.</div>
+      <button type="submit" class="login-btn">Admin Login</button>
+      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 Guest Access (View only)</button>
+    </form>
+    <div class="login-footer">FT CASE Management &nbsp;·&nbsp; Sprint 3</div>
+  </div>
+</div>
+
+<!-- DASHBOARD WRAPPER -->
+<div id="dashboard">
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <span class="sys-tag">QA System</span>
+    <h1>FT CASE Dashboard</h1>
+  </div>
+  <div class="header-right">
+    <span class="kst-clock" id="kst-clock">--:-- --</span>
+    <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
+    <span id="sync-status"></span>
+    <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin Sync Settings">⚙</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
+    <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi kpi-total">
+      <div class="kpi-label">Total Case</div>
+      <div class="kpi-value" id="cnt-total">2</div>
+    </div>
+    <div class="kpi kpi-prog">
+      <div class="kpi-label">Open</div>
+      <div class="kpi-value" id="cnt-open">1</div>
+      <div class="kpi-sub" id="sub-open">50.0%</div>
+    </div>
+    <div class="kpi kpi-done">
+      <div class="kpi-label">Close</div>
+      <div class="kpi-value" id="cnt-close">1</div>
+      <div class="kpi-sub" id="sub-close">50.0%</div>
+    </div>
+    <div class="kpi kpi-late">
+      <div class="kpi-label">HIGH Priority</div>
+      <div class="kpi-value" id="cnt-high">0</div>
+    </div>
+    <div class="kpi kpi-wait">
+      <div class="kpi-label">Returned Units</div>
+      <div class="kpi-value" id="cnt-units">2</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- TIMELINE PANEL -->
+    <div class="timeline-panel">
+      <div class="panel-header">
+        <span class="panel-title">Open Case time-line</span>
+        <span style="font-size:10px;color:var(--text-muted);">
+          <span style="color:var(--accent)">◆</span> Target &nbsp;
+          <span style="color:var(--done)">●</span> Actual
+        </span>
+      </div>
+      <div class="timeline-body">
+        <canvas id="overall-gantt" width="1511" height="116" style="height: 106px;"></canvas>
+        <div class="next-action-wrap">
+          <div class="next-action-title">Next Report</div>
+          <div id="next-actions">
+    <table class="na-table">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>End Customer</th>
+          <th>Next FA Stage</th>
+          <th>Target Date</th>
+          <th style="text-align:right">D-Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        
+          <tr>
+            <td style="font-weight:600;color:var(--accent)">009777</td>
+            <td style="color:var(--text-primary)">Insta360</td>
+            <td><span class="sbadge sb-i123">Interim (2)</span></td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-primary)">7/07</td>
+            <td style="text-align:right"><span class="na-dday soon">D-3</span></td>
+          </tr>
+      </tbody>
+    </table></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLE PANEL -->
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Case list</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="add-case-row" id="add-case-row" style="margin:0;padding:0;border:none;background:none;">
+            <button class="add-case-btn" onclick="openModal()">
+              <span class="plus">+</span> Add Case
+            </button>
+          </div>
+          <div class="filter-tabs">
+            <button class="ftab active" data-filter="all" onclick="filterTable(this,'all')">All</button>
+            <button class="ftab" data-filter="open" onclick="filterTable(this,'open')">Open</button>
+            <button class="ftab" data-filter="close" onclick="filterTable(this,'close')">Close</button>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table id="ft-table">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>End customer</th>
+              <th>Status</th>
+              <th>Priority</th>
+              <th>FA stage</th>
+              <th>SFDC Open date</th>
+              <th>Returned Units</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="ft-body"><tr onclick="openDetail('009777')" title="Click for details">
+      <td class="td-id">009777</td>
+      <td class="td-name">Insta360</td>
+      <td><span class="pill s-progress"><span class="pill-dot"></span>Open</span></td>
+      <td><span class="prio p-m">MED</span></td>
+      <td><span class="sbadge sb-i123">Interim (1)</span></td>
+      <td class="td-date">06/25</td>
+      <td><span class="issue issue-y">1</span></td>
+      <td><span class="timing t-ontime">On time</span></td>
+    </tr><tr onclick="openDetail('009746')" title="Click for details">
+      <td class="td-id">009746</td>
+      <td class="td-name">HYBUS</td>
+      <td><span class="pill s-done"><span class="pill-dot"></span>Close</span></td>
+      <td><span class="prio p-m">MED</span></td>
+      <td><span class="sbadge sb-f4d">Final 4D</span></td>
+      <td class="td-date">05/26</td>
+      <td><span class="issue issue-y">1</span></td>
+      <td><span class="timing t-closed">Closed</span></td>
+    </tr></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+
+</main>
+
+</div><!-- /dashboard -->
+
+<!-- EXPORT / IMPORT MODAL -->
+<div id="data-modal-overlay" onclick="if(event.target===this)closeDataModal()">
+  <div class="data-modal">
+    <div class="data-modal-header">
+      <span class="data-modal-title" id="data-modal-title">⬇ Export</span>
+      <button class="modal-close" onclick="closeDataModal()">×</button>
+    </div>
+    <div class="data-modal-body">
+      <div id="data-modal-tabs" style="display:flex;gap:6px;margin-bottom:4px;">
+        <button id="tab-json" class="data-btn" style="font-size: 12px; opacity: 0.5;" onclick="switchDataTab('json')">📋 JSON</button>
+        <button id="tab-html" class="data-btn" style="font-size: 12px; opacity: 1;" onclick="switchDataTab('html')">📄 Export as Page</button>
+      </div>
+      <span class="data-modal-note" id="data-modal-note">Copy the JSON below to save. You can reload it via Import.</span>
+      <textarea id="data-modal-ta" spellcheck="false" readonly=""></textarea>
+    </div>
+    <div class="data-modal-footer">
+      <button class="btn-cancel" onclick="closeDataModal()">Close</button>
+      <button class="btn-submit" id="data-modal-action">📋 Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS MODAL (admin only) -->
+<div id="settings-overlay" onclick="if(event.target===this)closeSettingsModal()">
+  <div class="settings-modal">
+    <div class="settings-modal-header">
+      <span class="settings-modal-title">⚙ JSONBin Sync Settings</span>
+      <button class="modal-close" onclick="closeSettingsModal()">×</button>
+    </div>
+    <div class="settings-modal-body">
+      <div class="settings-field">
+        <label>Master Key (X-Master-Key)</label>
+        <input type="password" id="jb-api-key" placeholder="$2a$10$..." autocomplete="off">
+        <span class="settings-hint">jsonbin.io → Account → API Keys — Stored on this device only.</span>
+      </div>
+      <div class="settings-field">
+        <label>Bin ID</label>
+        <input type="text" id="jb-bin-id" placeholder="67a1b2c3d4e5f6..." autocomplete="off">
+        <span class="settings-hint">Leave blank to auto-create a new Bin.</span>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-start;flex-direction:column;">
+        <div style="display:flex;gap:8px;">
+          <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 Test Connection</button>
+          <button class="data-btn" onclick="forceSyncNow()" style="font-size:12px;">⬆ Sync Now</button>
+        </div>
+        <div id="jb-test-result"></div>
+      </div>
+    </div>
+    <div class="settings-modal-footer">
+      <button class="btn-cancel" onclick="closeSettingsModal()">Cancel</button>
+      <button class="btn-submit" onclick="saveJbSettings()">Save &amp; Sync</button>
+    </div>
+  </div>
+</div>
+
+<!-- CASE 상세 / 수정 MODAL -->
+<div id="detail-overlay" onclick="onDetailOverlay(event)">
+  <div class="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="detail-modal-title">
+    <div class="modal-header">
+      <div class="detail-head-left">
+        <span class="td-id" id="d-caseid-display" style="font-size:15px;letter-spacing:.06em;"></span>
+        <span id="d-status-display"></span>
+        <span id="d-timing-display"></span>
+      </div>
+      <button class="modal-close" onclick="closeDetail()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body" id="detail-body">
+      <div class="modal-lr">
+        <!-- LEFT: 기본 정보 필드 -->
+        <div class="modal-left-fields">
+          <div class="mfield">
+            <label for="d-name">End customer</label>
+            <input id="d-name" type="text" placeholder="Customer description">
+          </div>
+          <div class="mfield">
+            <label for="d-opn">OPN</label>
+            <input id="d-opn" type="text" placeholder="Enter OPN">
+          </div>
+          <div class="modal-row">
+            <div class="mfield" style="flex:0 0 auto;justify-content:flex-start;">
+              <label>&nbsp;</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--accent);white-space:nowrap;">
+                <input type="checkbox" id="d-mcp" onchange="onMcpChange('d')" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                MCP
+              </label>
+            </div>
+            <div class="mfield">
+              <label for="d-prio">Priority</label>
+              <div class="select-wrap">
+                <select id="d-prio">
+                  <option value="H">HIGH</option>
+                  <option value="M">MED</option>
+                  <option value="L">LOW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label>Status</label>
+              <div class="status-toggle">
+                <button type="button" class="stoggle" id="d-stoggle-open" onclick="setDetailStatus('open')">Open</button>
+                <button type="button" class="stoggle" id="d-stoggle-close" onclick="setDetailStatus('close')">Close</button>
+              </div>
+              <input type="hidden" id="d-status" value="open">
+            </div>
+            <div class="mfield">
+              <label for="d-due">SFDC Open date</label>
+              <input id="d-due" type="date">
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-issues">Returned Units</label>
+              <input id="d-issues" type="number" min="0">
+            </div>
+            <div class="mfield">
+              <label>Progress</label>
+              <div id="d-timing-badge" style="padding-top:6px;"></div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-area">Area</label>
+              <select id="d-area">
+                <option value="">— Select —</option>
+                <option value="APAC">APAC</option>
+                <option value="Korea/Japan">Korea/Japan</option>
+                <option value="Europe">Europe</option>
+                <option value="AM">AM</option>
+                <option value="Taiwan">Taiwan</option>
+              </select>
+            </div>
+            <div class="mfield">
+              <label for="d-fail-location">Fail location</label>
+              <select id="d-fail-location">
+                <option value="">— Select —</option>
+                <option value="Line">Line</option>
+                <option value="Field">Field</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="d-fail-rate">Fail rate (%)</label>
+              <input id="d-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div class="mfield">
+              <label for="d-failure-mode">Failure mode</label>
+              <input id="d-failure-mode" type="text" placeholder="e.g. Short circuit">
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Units return date + Target Date + FA Stage -->
+        <div class="modal-right-fields">
+          <div class="modal-right-top">
+            <div class="mfield">
+              <label for="d-return-date">Units return date</label>
+              <input id="d-return-date" type="date" oninput="onReturnDateChange('d-return-date','d')">
+            </div>
+          </div>
+          <div class="target-gantt-row">
+          <div class="mfield">
+            <label>Target Date</label>
+            <div class="target-dates">
+              <div class="tdate-head">
+                <span class="tdate-head-spacer"></span>
+                <span class="tdate-head-col" style="width:110px">Actual</span>
+                <span class="tdate-head-col" style="min-width:60px"></span>
+                <span class="tdate-head-col" style="min-width:60px">Target</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Initial report</span>
+                <input type="date" class="tdate-actual" id="d-ta-initial" onchange="onInitialActualChange('d')">
+                <span class="tdate-offset" id="d-offset-initial">+1 wd</span>
+                <span class="tdate-val empty" id="d-td-initial">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (1) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i1">
+                <span class="tdate-offset" id="d-offset-i1">+2 wd</span>
+                <span class="tdate-val empty" id="d-td-i1">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (2) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i2">
+                <span class="tdate-offset" id="d-offset-i2">+6 wd</span>
+                <span class="tdate-val empty" id="d-td-i2">—</span>
+              </div>
+              <div class="tdate-row" id="d-trow-i3">
+                <span class="tdate-label">Interim (3) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i3">
+                <span class="tdate-offset">+8 wd</span>
+                <span class="tdate-val empty" id="d-td-i3">—</span>
+              </div>
+              <div class="tdate-row" id="d-trow-i4">
+                <span class="tdate-label">Interim (4) report</span>
+                <input type="date" class="tdate-actual" id="d-ta-i4">
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="d-td-i4">—</span>
+              </div>
+              <div class="tdate-row" id="d-trow-f4d">
+                <span class="tdate-label">Final 4D report</span>
+                <input type="date" class="tdate-actual" id="d-ta-f4d">
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="d-td-f4d">—</span>
+              </div>
+              <div class="tdate-row" id="d-trow-f8d">
+                <span class="tdate-label">Final 8D report</span>
+                <input type="date" class="tdate-actual" id="d-ta-f8d">
+                <span class="tdate-offset">+16 wd</span>
+                <span class="tdate-val empty" id="d-td-f8d">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="mfield gantt-mfield">
+            <label>Timeline</label>
+            <div class="gantt-wrap">
+              <canvas id="d-gantt"></canvas>
+            </div>
+          </div>
+          </div><!-- /.target-gantt-row -->
+          <div class="mfield">
+            <label>FA stage</label>
+            <div class="stage-group" id="d-stage-group">
+              <button type="button" class="stage-btn" data-stage="wait-device" onclick="selectDetailStage(this)">Wait Device</button>
+              <button type="button" class="stage-btn" data-stage="initial" onclick="selectDetailStage(this)">Initial</button>
+              <button type="button" class="stage-btn" data-stage="interim-1" onclick="selectDetailStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn" data-stage="interim-2" onclick="selectDetailStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn" data-stage="interim-3" onclick="selectDetailStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn" data-stage="interim-4" onclick="selectDetailStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn" data-stage="final-4d" onclick="selectDetailStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn" data-stage="final-8d" onclick="selectDetailStage(this)">Final 8D</button>
+            </div>
+            <input type="hidden" id="d-stage" value="wait-device">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer" id="detail-footer"></div>
+  </div>
+</div>
+
+<!-- CASE 등록 MODAL -->
+<div id="modal-overlay" onclick="onOverlayClick(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-header">
+      <span class="modal-title" id="modal-title">Add Case</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-lr">
+        <!-- LEFT: 기본 정보 필드 -->
+        <div class="modal-left-fields">
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-id">Case ID</label>
+              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="Enter 6-digit number" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">Please enter a 6-digit number.</span>
+            </div>
+            <div class="mfield" style="flex:0 0 auto;justify-content:flex-end;">
+              <label>&nbsp;</label>
+              <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600;color:var(--accent);white-space:nowrap;">
+                <input type="checkbox" id="m-mcp" onchange="onMcpChange('m')" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer;">
+                MCP
+              </label>
+            </div>
+          </div>
+          <div class="mfield">
+            <label for="m-name">End customer</label>
+            <input id="m-name" type="text" placeholder="Enter customer description">
+          </div>
+          <div class="mfield">
+            <label for="m-opn">OPN</label>
+            <input id="m-opn" type="text" placeholder="Enter OPN">
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label>Status</label>
+              <div class="status-toggle">
+                <button type="button" class="stoggle open-active" id="stoggle-open" onclick="setStatus('open')">Open</button>
+                <button type="button" class="stoggle" id="stoggle-close" onclick="setStatus('close')">Close</button>
+              </div>
+              <input type="hidden" id="m-status" value="open">
+            </div>
+            <div class="mfield">
+              <label for="m-prio">Priority</label>
+              <div class="select-wrap">
+                <select id="m-prio">
+                  <option value="H">HIGH</option>
+                  <option value="M" selected="">MED</option>
+                  <option value="L">LOW</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-due">SFDC Open date</label>
+              <input id="m-due" type="date">
+            </div>
+            <div class="mfield">
+              <label for="m-issues">Returned Units</label>
+              <input id="m-issues" type="number" min="0" value="0" placeholder="0">
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-area">Area</label>
+              <select id="m-area">
+                <option value="">— Select —</option>
+                <option value="APAC">APAC</option>
+                <option value="Korea/Japan">Korea/Japan</option>
+                <option value="Europe">Europe</option>
+                <option value="AM">AM</option>
+                <option value="Taiwan">Taiwan</option>
+              </select>
+            </div>
+            <div class="mfield">
+              <label for="m-fail-location">Fail location</label>
+              <select id="m-fail-location">
+                <option value="">— Select —</option>
+                <option value="Line">Line</option>
+                <option value="Field">Field</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-row">
+            <div class="mfield">
+              <label for="m-fail-rate">Fail rate (%)</label>
+              <input id="m-fail-rate" type="number" min="0" max="100" step="0.01" placeholder="0.00">
+            </div>
+            <div class="mfield">
+              <label for="m-failure-mode">Failure mode</label>
+              <input id="m-failure-mode" type="text" placeholder="e.g. Short circuit">
+            </div>
+          </div>
+        </div>
+        <!-- RIGHT: Units return date + Target Date + FA Stage -->
+        <div class="modal-right-fields">
+          <div class="modal-right-top">
+            <div class="mfield">
+              <label for="m-return-date">Units return date</label>
+              <input id="m-return-date" type="date" oninput="onReturnDateChange('m-return-date','m')">
+            </div>
+          </div>
+          <div class="target-gantt-row">
+          <div class="mfield">
+            <label>Target Date</label>
+            <div class="target-dates">
+              <div class="tdate-head">
+                <span class="tdate-head-spacer"></span>
+                <span class="tdate-head-col" style="width:110px">Actual</span>
+                <span class="tdate-head-col" style="min-width:60px"></span>
+                <span class="tdate-head-col" style="min-width:60px">Target</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Initial report</span>
+                <input type="date" class="tdate-actual" id="m-ta-initial" onchange="onInitialActualChange('m')">
+                <span class="tdate-offset" id="m-offset-initial">+1 wd</span>
+                <span class="tdate-val empty" id="m-td-initial">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (1) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i1">
+                <span class="tdate-offset" id="m-offset-i1">+2 wd</span>
+                <span class="tdate-val empty" id="m-td-i1">—</span>
+              </div>
+              <div class="tdate-row">
+                <span class="tdate-label">Interim (2) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i2">
+                <span class="tdate-offset" id="m-offset-i2">+6 wd</span>
+                <span class="tdate-val empty" id="m-td-i2">—</span>
+              </div>
+              <div class="tdate-row" id="m-trow-i3">
+                <span class="tdate-label">Interim (3) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i3">
+                <span class="tdate-offset">+8 wd</span>
+                <span class="tdate-val empty" id="m-td-i3">—</span>
+              </div>
+              <div class="tdate-row" id="m-trow-i4">
+                <span class="tdate-label">Interim (4) report</span>
+                <input type="date" class="tdate-actual" id="m-ta-i4">
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="m-td-i4">—</span>
+              </div>
+              <div class="tdate-row" id="m-trow-f4d">
+                <span class="tdate-label">Final 4D report</span>
+                <input type="date" class="tdate-actual" id="m-ta-f4d">
+                <span class="tdate-offset">+13 wd</span>
+                <span class="tdate-val empty" id="m-td-f4d">—</span>
+              </div>
+              <div class="tdate-row" id="m-trow-f8d">
+                <span class="tdate-label">Final 8D report</span>
+                <input type="date" class="tdate-actual" id="m-ta-f8d">
+                <span class="tdate-offset">+16 wd</span>
+                <span class="tdate-val empty" id="m-td-f8d">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="mfield gantt-mfield">
+            <label>Timeline</label>
+            <div class="gantt-wrap">
+              <canvas id="m-gantt"></canvas>
+            </div>
+          </div>
+          </div><!-- /.target-gantt-row -->
+          <div class="mfield">
+            <label>FA stage</label>
+            <div class="stage-group" id="stage-group">
+              <button type="button" class="stage-btn sel-wait" data-stage="wait-device" onclick="selectStage(this)">Wait Device</button>
+              <button type="button" class="stage-btn" data-stage="initial" onclick="selectStage(this)">Initial</button>
+              <button type="button" class="stage-btn" data-stage="interim-1" onclick="selectStage(this)">Interim (1)</button>
+              <button type="button" class="stage-btn" data-stage="interim-2" onclick="selectStage(this)">Interim (2)</button>
+              <button type="button" class="stage-btn" data-stage="interim-3" onclick="selectStage(this)">Interim (3)</button>
+              <button type="button" class="stage-btn" data-stage="interim-4" onclick="selectStage(this)">Interim (4)</button>
+              <button type="button" class="stage-btn" data-stage="final-4d" onclick="selectStage(this)">Final 4D</button>
+              <button type="button" class="stage-btn" data-stage="final-8d" onclick="selectStage(this)">Final 8D</button>
+            </div>
+            <input type="hidden" id="m-stage" value="wait-device">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitCase()">Add</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── DATA (localStorage + JSONBin cloud sync) ───── */
+const STORAGE_KEY = 'ft_cases_v1';
+const JB_KEY_STORE = 'ft_jb_key';
+const JB_BIN_STORE = 'ft_jb_bin';
+const JSONBIN_BIN_ID     = /* FT_JB_BIN_START */'6a462009f5f4af5e29529336'/* FT_JB_BIN_END */;
+const JSONBIN_MASTER_KEY = /* FT_JB_KEY_START */'$2a$10$rSG0Z.2fIo2rLEPCi16LqOygPyzapnBZPPVcIs0hmaEOClSAM/hwK'/* FT_JB_KEY_END */;
+
+function getJbKey() { return JSONBIN_MASTER_KEY || localStorage.getItem(JB_KEY_STORE) || ''; }
+function getBinId()  { return localStorage.getItem(JB_BIN_STORE) || JSONBIN_BIN_ID || ''; }
+
+function setSyncStatus(state, msg) {
+  const el = document.getElementById('sync-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = state; // '', 'syncing', 'ok', 'err'
+  el.style.display = msg ? '' : 'none';
+}
+
+async function autoDiscoverBinId() {
+  const key = getJbKey();
+  if (!key) return '';
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b', {
+      headers: { 'X-Master-Key': key },
+      signal: controller.signal
+    });
+    if (!r.ok) return '';
+    const j = await r.json();
+    const bins = Array.isArray(j) ? j : (Array.isArray(j.record) ? j.record : []);
+    const found = bins.find(b => (b.snippetMeta?.name || b.name) === 'ft-cases');
+    if (found) {
+      const id = found._id || found.id || '';
+      if (id) localStorage.setItem(JB_BIN_STORE, id);
+      return id;
+    }
+  } catch(e) {}
+  return '';
+}
+
+async function fetchFromJsonBin() {
+  let binId = getBinId();
+  const key = getJbKey();
+  if (!binId && key) binId = await autoDiscoverBinId();
+  if (!binId) return null;
+  const headers = { 'X-Bin-Meta': 'false' };
+  if (key) headers['X-Master-Key'] = key;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 5000);
+    const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers, signal: controller.signal, cache: 'no-store' });
+    clearTimeout(timer);
+    console.log('[fetchFromJsonBin] status:', r.status, 'ok:', r.ok);
+    if (!r.ok) { console.log('[fetchFromJsonBin] not ok → null'); return null; }
+    const j = await r.json();
+    const data = Array.isArray(j) ? j : (Array.isArray(j.record) ? j.record : null);
+    console.log('[fetchFromJsonBin] data:', data, 'length:', data && data.length);
+    return data;
+  } catch(e) { console.log('[fetchFromJsonBin] catch error:', e); return null; }
+}
+
+async function pushToJsonBin(data) {
+  const key = getJbKey();
+  if (!key) return;
+  let binId = getBinId();
+  try {
+    setSyncStatus('syncing', '↑ Syncing…');
+    if (binId) {
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) throw new Error('PUT ' + r.status);
+    } else {
+      const r = await fetch('https://api.jsonbin.io/v3/b', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Name': 'ft-cases', 'X-Bin-Private': 'false' },
+        body: JSON.stringify(data)
+      });
+      if (!r.ok) throw new Error('POST ' + r.status);
+      const j = await r.json();
+      const newId = j.metadata?.id;
+      if (newId) { localStorage.setItem(JB_BIN_STORE, newId); }
+    }
+    setSyncStatus('ok', '✓ Synced');
+    setTimeout(() => setSyncStatus('', ''), 3000);
+  } catch(e) {
+    setSyncStatus('err', '✗ Sync failed');
+    setTimeout(() => setSyncStatus('', ''), 5000);
+  }
+}
+
+function saveCases() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
+  pushToJsonBin(CASES);
+}
+
+/* SEED_CASES — 배포 시 Admin이 내장한 기본 데이터. localStorage 없는 기기의 폴백 */
+const SEED_CASES = /* FT_SEED_START */[{"id":"009777","name":"Insta360","assignee":"RYU","status":"open","stage":"interim-1","prio":"M","due":"06/25","issues":1,"returnDate":"06/29","initialReport":"07/03","actualDates":{"initial":"2026-06-30","i1":"2026-07-01"},"opn":"","area":"APAC","failLocation":"Line","failRate":null,"failureMode":"Device fails to start"},{"id":"009746","name":"HYBUS","opn":"S34ML08G201TFI000","assignee":"RYU","status":"close","stage":"final-4d","prio":"M","due":"05/26","issues":1,"returnDate":"05/26","actualDates":{"initial":"2026-05-27","i1":"2026-05-28","i2":"2026-06-01","i3":"2026-06-08","f4d":"2026-06-15"}}]/* FT_SEED_END */;
+
+async function loadCases() {
+  // 1) Try JSONBin cloud (works for all devices without login)
+  const binId = getBinId();
+  console.log('[loadCases] binId:', binId);
+  if (binId) {
+    setSyncStatus('syncing', '↓ Loading…');
+    const cloud = await fetchFromJsonBin();
+    console.log('[loadCases] cloud:', cloud, 'length:', cloud && cloud.length);
+    if (cloud && cloud.length) {
+      cloud.forEach(c => CASES.push(c));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(CASES)); } catch(e) {}
+      setSyncStatus('ok', '✓ Synced');
+      setTimeout(() => setSyncStatus('', ''), 3000);
+      console.log('[loadCases] ✓ JSONBin 로드 완료, cases:', CASES.length);
+      return;
+    }
+    console.log('[loadCases] JSONBin 실패 → localStorage 폴백');
+    setSyncStatus('', '');
+  }
+  // 2) Fallback: localStorage
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    console.log('[loadCases] localStorage raw length:', raw && raw.length);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      arr.forEach(c => CASES.push(c));
+      console.log('[loadCases] ✓ localStorage 로드 완료, cases:', CASES.length);
+      return;
+    }
+  } catch(e) {}
+  // 3) Fallback: embedded SEED_CASES
+  console.log('[loadCases] SEED_CASES 폴백');
+  if (SEED_CASES.length) SEED_CASES.forEach(c => CASES.push(JSON.parse(JSON.stringify(c))));
+}
+
+const CASES = [];
+
+/* ── META TABLES ────────────────────────────────── */
+const STATUS_META = {
+  open:  { label:'Open',  cls:'s-progress' },
+  close: { label:'Close', cls:'s-done'     },
+};
+
+const STAGE_META = {
+  'wait-device': { label:'Wait Device', cls:'sb-wait' },
+  'initial':     { label:'Initial',     cls:'sb-init' },
+  'interim-1':   { label:'Interim (1)', cls:'sb-i123' },
+  'interim-2':   { label:'Interim (2)', cls:'sb-i123' },
+  'interim-3':   { label:'Interim (3)', cls:'sb-i123' },
+  'interim-4':   { label:'Interim (4)', cls:'sb-i4'   },
+  'final-4d':    { label:'Final 4D',    cls:'sb-f4d'  },
+  'final-8d':    { label:'Final 8D',    cls:'sb-f8d'  },
+};
+
+const STAGE_SEL_CLS = {
+  'wait-device': 'sel-wait',
+  'initial':     'sel-initial',
+  'interim-1':   'sel-i1',
+  'interim-2':   'sel-i2',
+  'interim-3':   'sel-i3',
+  'interim-4':   'sel-i4',
+  'final-4d':    'sel-f4d',
+  'final-8d':    'sel-f8d',
+};
+
+const PRIO_META = {
+  H: { label:'HIGH', cls:'p-h' },
+  M: { label:'MED',  cls:'p-m' },
+  L: { label:'LOW',  cls:'p-l' },
+};
+
+/* ── 한국 공휴일 (고정 + 대체 + 임시) ───────────── */
+const KR_HOLIDAYS = new Set([
+  // ── 2025 ──────────────────────────────────────
+  '2025-01-01', // 신정
+  '2025-01-27', // 임시공휴일 (설 연휴 연결)
+  '2025-01-28', // 설날 전날
+  '2025-01-29', // 설날
+  '2025-01-30', // 설날 다음날
+  '2025-03-01', // 삼일절 (토)
+  '2025-03-03', // 삼일절 대체공휴일
+  '2025-05-05', // 어린이날 + 석가탄신일
+  '2025-05-06', // 어린이날/석가탄신일 대체공휴일
+  '2025-06-06', // 현충일
+  '2025-08-15', // 광복절
+  '2025-10-03', // 개천절
+  '2025-10-05', // 추석 전날 (일)
+  '2025-10-06', // 추석
+  '2025-10-07', // 추석 다음날
+  '2025-10-08', // 추석 대체공휴일
+  '2025-10-09', // 한글날
+  '2025-12-25', // 성탄절
+  // ── 2026 ──────────────────────────────────────
+  '2026-01-01', // 신정
+  '2026-02-16', // 설날 전날
+  '2026-02-17', // 설날
+  '2026-02-18', // 설날 다음날
+  '2026-03-01', // 삼일절 (일)
+  '2026-03-02', // 삼일절 대체공휴일
+  '2026-05-05', // 어린이날
+  '2026-05-24', // 석가탄신일 (일)
+  '2026-05-25', // 석가탄신일 대체공휴일
+  '2026-06-06', // 현충일 (토)
+  '2026-06-08', // 현충일 대체공휴일
+  '2026-08-15', // 광복절 (토)
+  '2026-08-17', // 광복절 대체공휴일
+  '2026-09-30', // 추석 전날
+  '2026-10-01', // 추석
+  '2026-10-02', // 추석 다음날
+  '2026-10-03', // 개천절 (토)
+  '2026-10-05', // 개천절 대체공휴일
+  '2026-10-09', // 한글날
+  '2026-12-25', // 성탄절
+  // ── 2027 ──────────────────────────────────────
+  '2027-01-01', // 신정
+  '2027-02-06', // 설날 전날
+  '2027-02-07', // 설날
+  '2027-02-08', // 설날 다음날
+  '2027-03-01', // 삼일절 (월)
+  '2027-05-05', // 어린이날
+  '2027-05-13', // 석가탄신일
+  '2027-06-06', // 현충일 (일)
+  '2027-06-07', // 현충일 대체공휴일
+  '2027-08-15', // 광복절 (일)
+  '2027-08-16', // 광복절 대체공휴일
+  '2027-10-03', // 개천절 (일)
+  '2027-10-04', // 개천절 대체공휴일
+  '2027-10-09', // 한글날 (토)
+  '2027-10-11', // 한글날 대체공휴일
+  '2027-10-15', // 추석 전날
+  '2027-10-16', // 추석
+  '2027-10-17', // 추석 다음날
+  '2027-12-25', // 성탄절 (토)
+  '2027-12-27', // 성탄절 대체공휴일
+  // ── 임시공휴일은 아래에 추가 ──────────────────
+  '2026-06-03', // 임시공휴일 (제21대 대통령 선거일)
+]);
+
+function isWorkingDay(d) {
+  const day = d.getDay();
+  if (day === 0 || day === 6) return false;
+  const iso = d.getFullYear() + '-'
+    + String(d.getMonth() + 1).padStart(2, '0') + '-'
+    + String(d.getDate()).padStart(2, '0');
+  return !KR_HOLIDAYS.has(iso);
+}
+
+function getEffectiveToday() {
+  const d = new Date(); d.setHours(0, 0, 0, 0);
+  while (!isWorkingDay(d)) d.setDate(d.getDate() + 1);
+  return d;
+}
+
+/* ── WORKING DAY CALC ───────────────────────────── */
+const TARGET_OFFSETS = [
+  { id: 'td-initial', key: 'initial', n: 1  },
+  { id: 'td-i1',      key: 'i1',     n: 2  },
+  { id: 'td-i2',      key: 'i2',     n: 6  },
+  { id: 'td-i3',      key: 'i3',     n: 8  },
+  { id: 'td-i4',      key: 'i4',     n: 13 },
+  { id: 'td-f4d',     key: 'f4d',    n: 13 },
+  { id: 'td-f8d',     key: 'f8d',    n: 16 },
+];
+
+function addWorkingDays(dateStr, n) {
+  const d = new Date(dateStr + 'T00:00:00');
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  return String(d.getMonth() + 1).padStart(2,'0') + '/' + String(d.getDate()).padStart(2,'0');
+}
+
+function renderTargetDates(prefix, dateStr) {
+  TARGET_OFFSETS.forEach(({ id, n }) => {
+    const el = document.getElementById(`${prefix}-${id}`);
+    if (!el) return;
+    if (dateStr) {
+      el.textContent = addWorkingDays(dateStr, n);
+      el.classList.remove('empty');
+    } else {
+      el.textContent = '—';
+      el.classList.add('empty');
+    }
+  });
+}
+
+function onReturnDateChange(inputId, prefix) {
+  const val = document.getElementById(inputId).value;
+  const isMcp = document.getElementById(prefix + '-mcp')?.checked;
+  if (isMcp) {
+    // MCP: only initial target uses return date
+    const initEl = document.getElementById(prefix + '-td-initial');
+    if (initEl) {
+      if (val) { initEl.textContent = addWorkingDays(val, 1); initEl.classList.remove('empty'); }
+      else     { initEl.textContent = '—'; initEl.classList.add('empty'); }
+    }
+  } else {
+    renderTargetDates(prefix, val || '');
+  }
+  renderGanttChart(prefix);
+}
+
+function onMcpChange(prefix) {
+  const isMcp = document.getElementById(prefix + '-mcp').checked;
+  const hiddenKeys = ['i3','i4','f4d','f8d'];
+
+  // Show/hide target date rows
+  hiddenKeys.forEach(key => {
+    const row = document.getElementById(prefix + '-trow-' + key);
+    if (row) row.style.display = isMcp ? 'none' : '';
+  });
+
+  // Show/hide FA stage buttons
+  const stageGroupId = prefix === 'd' ? 'd-stage-group' : 'stage-group';
+  const mcpHideStages = ['interim-3','interim-4','final-4d','final-8d'];
+  document.querySelectorAll(`#${stageGroupId} .stage-btn`).forEach(btn => {
+    if (mcpHideStages.includes(btn.dataset.stage)) {
+      btn.style.display = isMcp ? 'none' : '';
+    }
+  });
+
+  // Update offset labels
+  const o1 = document.getElementById(prefix + '-offset-i1');
+  const o2 = document.getElementById(prefix + '-offset-i2');
+  if (o1) o1.textContent = isMcp ? '+4 wd*' : '+2 wd';
+  if (o2) o2.textContent = isMcp ? '+7 wd*' : '+6 wd';
+
+  const initOffsetEl = document.getElementById(prefix + '-offset-initial');
+  if (initOffsetEl) initOffsetEl.style.visibility = isMcp ? 'hidden' : '';
+
+  if (isMcp) {
+    const initEl = document.getElementById(prefix + '-td-initial');
+    if (initEl) { initEl.textContent = '—'; initEl.classList.add('empty'); }
+    renderMcpInterimTargets(prefix);
+  } else {
+    const returnDate = document.getElementById(prefix + '-return-date')?.value || '';
+    renderTargetDates(prefix, returnDate);
+  }
+  renderGanttChart(prefix);
+}
+
+function renderMcpInterimTargets(prefix) {
+  const initialActual = document.getElementById(prefix + '-ta-initial')?.value || '';
+  const i1El = document.getElementById(prefix + '-td-i1');
+  const i2El = document.getElementById(prefix + '-td-i2');
+  if (i1El) {
+    if (initialActual) { i1El.textContent = addWorkingDays(initialActual, 4); i1El.classList.remove('empty'); }
+    else               { i1El.textContent = '—'; i1El.classList.add('empty'); }
+  }
+  if (i2El) {
+    if (initialActual) { i2El.textContent = addWorkingDays(initialActual, 7); i2El.classList.remove('empty'); }
+    else               { i2El.textContent = '—'; i2El.classList.add('empty'); }
+  }
+}
+
+function onInitialActualChange(prefix) {
+  if (document.getElementById(prefix + '-mcp')?.checked) {
+    renderMcpInterimTargets(prefix);
+    renderGanttChart(prefix);
+  }
+}
+
+function loadActualDates(prefix, actualDates) {
+  const ad = actualDates || {};
+  TARGET_OFFSETS.forEach(({ key }) => {
+    const el = document.getElementById(prefix + '-ta-' + key);
+    if (el) el.value = ad[key] || '';
+  });
+  renderGanttChart(prefix);
+}
+
+function readActualDates(prefix) {
+  const result = {};
+  TARGET_OFFSETS.forEach(({ key }) => {
+    const el = document.getElementById(prefix + '-ta-' + key);
+    if (el && el.value) result[key] = el.value;
+  });
+  return result;
+}
+
+/* ── TIMING ─────────────────────────────────────── */
+const STAGE_OFFSETS = {
+  'initial':   1,
+  'interim-1': 2,
+  'interim-2': 6,
+  'interim-3': 8,
+  'interim-4': 13,
+  'final-4d':  13,
+  'final-8d':  16,
+};
+
+function getStageTargetDate(c) {
+  if (!c.returnDate) return null;
+  const n = STAGE_OFFSETS[c.stage];
+  if (n === undefined) return null;
+  const parts = c.returnDate.split('/');
+  const yr = new Date().getFullYear();
+  const iso = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+  const d = new Date(iso + 'T00:00:00');
+  let added = 0;
+  while (added < n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getNextStageTargetDate(c) {
+  if (!c.returnDate) return null;
+  const next = STAGE_NEXT[c.stage];
+  if (!next) return null;
+  const off = TARGET_OFFSETS.find(o => o.key === next.key);
+  if (!off) return null;
+  const parts = c.returnDate.split('/');
+  const yr = new Date().getFullYear();
+  const iso = yr + '-' + parts[0].padStart(2,'0') + '-' + parts[1].padStart(2,'0');
+  const d = new Date(iso + 'T00:00:00');
+  let added = 0;
+  while (added < off.n) {
+    d.setDate(d.getDate() + 1);
+    if (isWorkingDay(d)) added++;
+  }
+  d.setHours(0, 0, 0, 0);
+  return d;
+}
+
+function getTimingStatus(c) {
+  if (c.status === 'close') return { label: 'Closed', cls: 't-closed' };
+  const target = getNextStageTargetDate(c);
+  if (target) {
+    const today = getEffectiveToday();
+    const diff = Math.round((today - target) / 86400000);
+    if (diff === 0) return { label: 'On time',              cls: 't-ontime' };
+    if (diff > 0)  return { label: 'Delay (+' + diff + 'd)', cls: 't-delay'  };
+    return               { label: 'On time',                cls: 't-ontime' };
+  }
+  return { label: '—', cls: 't-closed' };
+}
+
+/* ── TABLE ──────────────────────────────────────── */
+function buildTable(filter = 'all') {
+  const tbody = document.getElementById('ft-body');
+  tbody.innerHTML = '';
+  CASES.forEach(c => {
+    if (filter !== 'all' && c.status !== filter) return;
+    const sm = STATUS_META[c.status] || { label: c.status, cls: 's-waiting' };
+    const sg = STAGE_META[c.stage]   || { label: c.stage,  cls: 'sb-wait'  };
+    const pm = PRIO_META[c.prio];
+    const tm = getTimingStatus(c);
+    const tr = document.createElement('tr');
+    tr.setAttribute('onclick', `openDetail('${c.id}')`);
+    tr.setAttribute('title', 'Click for details');
+    tr.innerHTML = `
+      <td class="td-id">${c.id}</td>
+      <td class="td-name">${c.name}</td>
+      <td><span class="pill ${sm.cls}"><span class="pill-dot"></span>${sm.label}</span></td>
+      <td><span class="prio ${pm.cls}">${pm.label}</span></td>
+      <td><span class="sbadge ${sg.cls}">${sg.label}</span></td>
+      <td class="td-date">${c.due}</td>
+      <td><span class="issue ${c.issues > 0 ? 'issue-y' : 'issue-n'}">${c.issues > 0 ? c.issues : '—'}</span></td>
+      <td><span class="timing ${tm.cls}">${tm.label}</span></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function filterTable(btn, filter) {
+  document.querySelectorAll('.ftab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildTable(filter);
+}
+
+/* ── DONUT (Close 비율) ─────────────────────────── */
+function drawDonut(pct) {
+  const canvas = document.getElementById('donut');
+  const ctx = canvas.getContext('2d');
+  const cx = 65, cy = 65, r = 50, lw = 10;
+  const TWO_PI = Math.PI * 2;
+  const START = -Math.PI / 2;
+  ctx.clearRect(0, 0, 130, 130);
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, TWO_PI);
+  ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border').trim();
+  ctx.lineWidth = lw;
+  ctx.stroke();
+  const end = START + (TWO_PI * pct / 100);
+  const grad = ctx.createLinearGradient(cx - r, cy, cx + r, cy);
+  grad.addColorStop(0, '#1A8FE3');
+  grad.addColorStop(1, '#22C78A');
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, START, end);
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = lw;
+  ctx.lineCap = 'round';
+  ctx.stroke();
+}
+
+let currentPct = 0;
+function animateDonut() {
+  if (!document.getElementById('donut')) return;
+  const closePct = Math.round(CASES.filter(c => c.status === 'close').length / CASES.length * 100);
+  if (currentPct < closePct) {
+    currentPct++;
+    drawDonut(currentPct);
+    const pctEl = document.getElementById('donut-pct');
+    if (pctEl) pctEl.textContent = currentPct + '%';
+    requestAnimationFrame(animateDonut);
+  }
+}
+
+/* ── KPI UPDATE ─────────────────────────────────── */
+function updateKPIs() {
+  const total  = CASES.length;
+  const closed = CASES.filter(c => c.status === 'close').length;
+  const opened = total - closed;
+  const highs  = CASES.filter(c => c.prio === 'H').length;
+  const units  = CASES.reduce((s, c) => s + c.issues, 0);
+  document.getElementById('cnt-total').textContent = total;
+  document.getElementById('cnt-open').textContent  = opened;
+  document.getElementById('cnt-close').textContent = closed;
+  document.getElementById('cnt-high').textContent  = highs;
+  document.getElementById('cnt-units').textContent = units;
+  document.getElementById('sub-open').textContent  = (opened / total * 100).toFixed(1) + '%';
+  document.getElementById('sub-close').textContent = (closed / total * 100).toFixed(1) + '%';
+  const bkOf = document.getElementById('bk-open-fill');
+  const bkCf = document.getElementById('bk-close-fill');
+  if (bkOf) bkOf.style.width  = (opened / total * 100) + '%';
+  if (bkCf) bkCf.style.width  = (closed / total * 100) + '%';
+  const bkOc = document.getElementById('bk-open-cnt');
+  const bkCc = document.getElementById('bk-close-cnt');
+  if (bkOc) bkOc.textContent = opened;
+  if (bkCc) bkCc.textContent = closed;
+}
+
+/* ── THEME TOGGLE ───────────────────────────────── */
+function getThemeIcon() {
+  return document.documentElement.classList.contains('light') ? '☀️' : '🌙';
+}
+
+function initKstClock() {
+  function tick() {
+    const el = document.getElementById('kst-clock');
+    if (!el) return;
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds();
+    const ampm = h < 12 ? 'AM' : 'PM';
+    const hh = h % 12 || 12;
+    el.textContent = `KST ${String(hh).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')} ${ampm}`;
+  }
+  tick();
+  setInterval(tick, 1000);
+}
+
+function initTheme() {
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = getThemeIcon();
+}
+
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  localStorage.setItem('ft_theme', isLight ? 'light' : 'dark');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = getThemeIcon();
+  renderOverallGantt();
+  renderNextActions();
+}
+
+/* ── LOGIN ──────────────────────────────────────── */
+const ACCOUNTS = [
+  { id: 'admin',  pw: 'admin1234', role: 'admin'  },
+  { id: 'viewer', pw: 'view5678',  role: 'viewer' },
+];
+
+let currentUser = null;
+
+function applyRole() {
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  document.getElementById('add-case-row').style.display = isAdmin ? '' : 'none';
+  const da = document.getElementById('data-actions');
+  if (da) da.style.display = isAdmin ? 'flex' : 'none';
+  const sb = document.getElementById('settings-btn');
+  if (sb) sb.style.display = isAdmin ? 'inline-block' : 'none';
+  const roleTag = document.getElementById('role-tag');
+  if (roleTag) {
+    if (isAdmin) {
+      roleTag.textContent = 'ADMIN';
+      roleTag.style.color = 'var(--prio-h)';
+    } else if (currentUser && currentUser.role === 'viewer') {
+      roleTag.textContent = 'VIEWER';
+      roleTag.style.color = 'var(--text-muted)';
+    } else {
+      roleTag.textContent = 'GUEST';
+      roleTag.style.color = 'var(--text-muted)';
+    }
+  }
+  const logoutBtn = document.getElementById('logout-btn');
+  if (logoutBtn) logoutBtn.textContent = isAdmin ? 'Logout' : '← Admin Login';
+}
+
+function switchDataTab(tab) {
+  document.getElementById('tab-json').style.opacity = tab === 'json' ? '1' : '0.5';
+  document.getElementById('tab-html').style.opacity = tab === 'html' ? '1' : '0.5';
+  if (tab === 'json') {
+    _fillExportJson();
+  } else {
+    _fillExportHtml();
+  }
+}
+
+function _fillExportJson() {
+  const data = { version: 'ft_cases_v1', exportedAt: new Date().toISOString(), cases: CASES };
+  const json = JSON.stringify(data, null, 2);
+  document.getElementById('data-modal-note').textContent = 'Copy the JSON below to save. You can reload it via Import.';
+  document.getElementById('data-modal-ta').value    = json;
+  document.getElementById('data-modal-ta').readOnly = true;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '📋 Copy';
+  btn.onclick = () => _copyTa(btn);
+}
+
+function _fillExportHtml() {
+  const seedJson = JSON.stringify(CASES);
+  const currentBinId = getBinId();
+  const src = document.documentElement.outerHTML;
+  let updated = src.replace(
+    /\/\* FT_SEED_START \*\/[\s\S]*?\/\* FT_SEED_END \*\//,
+    '/* FT_SEED_START */' + seedJson + '/* FT_SEED_END */'
+  );
+  if (currentBinId) {
+    updated = updated.replace(
+      /\/\* FT_JB_BIN_START \*\/[\s\S]*?\/\* FT_JB_BIN_END \*\//,
+      '/* FT_JB_BIN_START */' + JSON.stringify(currentBinId) + '/* FT_JB_BIN_END */'
+    );
+  }
+  const binNote = currentBinId ? ' JSONBin Bin ID (' + currentBinId.slice(0,8) + '…) is also embedded for auto-sync.' : '';
+  document.getElementById('data-modal-note').textContent =
+    'This HTML embeds ' + CASES.length + ' cases. Copy and save as index.html or deploy as a new Artifact to share the same data across devices.' + binNote;
+  document.getElementById('data-modal-ta').value    = updated;
+  document.getElementById('data-modal-ta').readOnly = true;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '📋 Copy';
+  btn.onclick = () => _copyTa(btn);
+}
+
+function _copyTa(btn) {
+  const ta = document.getElementById('data-modal-ta');
+  navigator.clipboard.writeText(ta.value).then(() => {
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800);
+  }).catch(() => {
+    ta.select();
+    document.execCommand('copy');
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800);
+  });
+}
+
+function openExportModal() {
+  document.getElementById('data-modal-title').textContent = '⬇ Export';
+  document.getElementById('data-modal-tabs').style.display = 'flex';
+  document.getElementById('data-modal-overlay').classList.add('open');
+  switchDataTab('json');
+  setTimeout(() => document.getElementById('data-modal-ta').select(), 50);
+}
+
+function openImportModal() {
+  document.getElementById('data-modal-title').textContent = '⬆ Import — Load Data';
+  document.getElementById('data-modal-tabs').style.display = 'none';
+  document.getElementById('data-modal-note').textContent  = 'Paste the exported JSON below and click [Import].';
+  document.getElementById('data-modal-ta').value          = '';
+  document.getElementById('data-modal-ta').readOnly       = false;
+  const btn = document.getElementById('data-modal-action');
+  btn.textContent = '⬆ Import';
+  btn.onclick = () => {
+    try {
+      const parsed   = JSON.parse(document.getElementById('data-modal-ta').value);
+      const imported = Array.isArray(parsed) ? parsed
+        : Array.isArray(parsed.cases) ? parsed.cases : null;
+      if (!imported) { alert('Not a valid FT Cases JSON.'); return; }
+      if (!confirm(`${imported.length} records will be loaded. This will overwrite existing data. Continue?`)) return;
+      CASES.length = 0;
+      imported.forEach(c => CASES.push(c));
+      saveCases(); updateKPIs(); buildTable('all'); renderOverallGantt(); renderNextActions();
+      closeDataModal();
+    } catch { alert('JSON parse error: please check the format.'); }
+  };
+  document.getElementById('data-modal-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('data-modal-ta').focus(), 50);
+}
+
+function closeDataModal() {
+  document.getElementById('data-modal-overlay').classList.remove('open');
+}
+
+/* ── SETTINGS MODAL ─────────────────────────────── */
+function openSettingsModal() {
+  document.getElementById('jb-api-key').value = getJbKey();
+  document.getElementById('jb-bin-id').value  = getBinId();
+  document.getElementById('jb-test-result').textContent = '';
+  document.getElementById('settings-overlay').classList.add('open');
+}
+
+function closeSettingsModal() {
+  document.getElementById('settings-overlay').classList.remove('open');
+}
+
+function saveJbSettings() {
+  const key   = document.getElementById('jb-api-key').value.trim();
+  const binId = document.getElementById('jb-bin-id').value.trim();
+  if (key)   localStorage.setItem(JB_KEY_STORE, key);
+  else       localStorage.removeItem(JB_KEY_STORE);
+  if (binId) localStorage.setItem(JB_BIN_STORE, binId);
+  else       localStorage.removeItem(JB_BIN_STORE);
+  closeSettingsModal();
+  pushToJsonBin(CASES);
+}
+
+async function forceSyncNow() {
+  const res = document.getElementById('jb-test-result');
+  res.style.color = 'var(--text-muted)';
+  res.textContent = 'Syncing…';
+  await pushToJsonBin(CASES);
+  res.style.color = '#4caf50';
+  res.textContent = '✓ ' + CASES.length + ' records synced';
+}
+
+async function testJbConnection() {
+  const key   = document.getElementById('jb-api-key').value.trim();
+  const binId = document.getElementById('jb-bin-id').value.trim();
+  const res   = document.getElementById('jb-test-result');
+  res.style.color = 'var(--text-muted)';
+  res.textContent = 'Connecting…';
+  try {
+    if (binId) {
+      // Test read of existing bin
+      const headers = { 'X-Bin-Meta': 'false' };
+      if (key) headers['X-Master-Key'] = key;
+      const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
+      if (r.ok) {
+        res.style.color = '#4caf50';
+        res.textContent = '✓ Connected! Bin is readable.';
+      } else {
+        res.style.color = 'var(--prio-h)';
+        res.textContent = '✗ Error ' + r.status + ' — Check API Key or Bin ID.';
+      }
+    } else if (key) {
+      // Test key by listing bins
+      const r = await fetch('https://api.jsonbin.io/v3/b', { headers: { 'X-Master-Key': key } });
+      if (r.ok || r.status === 200) {
+        res.style.color = '#4caf50';
+        res.textContent = '✓ API Key valid. Enter Bin ID or it will be auto-created on save.';
+      } else {
+        res.style.color = 'var(--prio-h)';
+        res.textContent = '✗ API Key error ' + r.status;
+      }
+    } else {
+      res.style.color = 'var(--prio-h)';
+      res.textContent = 'Please enter an API Key first.';
+    }
+  } catch(e) {
+    res.style.color = 'var(--prio-h)';
+    res.textContent = '✗ Network error: ' + e.message;
+  }
+}
+
+/* ── MODAL ──────────────────────────────────────── */
+function setStatus(val) {
+  document.getElementById('m-status').value = val;
+  document.getElementById('stoggle-open').classList.toggle('open-active',  val === 'open');
+  document.getElementById('stoggle-close').classList.toggle('close-active', val === 'close');
+}
+
+function selectStage(btn) {
+  document.querySelectorAll('#stage-group .stage-btn').forEach(b => {
+    b.className = 'stage-btn';
+  });
+  const selCls = STAGE_SEL_CLS[btn.dataset.stage] || '';
+  if (selCls) btn.classList.add(selCls);
+  document.getElementById('m-stage').value = btn.dataset.stage;
+}
+
+function openModal() {
+  document.getElementById('m-id').value          = '';
+  document.getElementById('m-name').value        = '';
+  document.getElementById('m-opn').value         = '';
+  document.getElementById('m-mcp').checked       = false;
+  onMcpChange('m');
+  document.getElementById('m-prio').value        = 'M';
+  document.getElementById('m-due').value         = '';
+  document.getElementById('m-issues').value      = '0';
+  document.getElementById('m-area').value          = '';
+  document.getElementById('m-fail-location').value = '';
+  document.getElementById('m-fail-rate').value     = '';
+  document.getElementById('m-failure-mode').value  = '';
+  document.getElementById('m-return-date').value   = '';
+  renderTargetDates('m', '');
+  loadActualDates('m', {});
+  document.getElementById('m-id-error').style.display = 'none';
+  // reset status toggle → Open
+  setStatus('open');
+  // reset stage → Wait Device
+  document.querySelectorAll('#stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const firstBtn = document.querySelector('#stage-group .stage-btn[data-stage="wait-device"]');
+  if (firstBtn) { firstBtn.classList.add('sel-wait'); }
+  document.getElementById('m-stage').value = 'wait-device';
+
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('m-id').focus();
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+function onOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function submitCase() {
+  const caseId   = document.getElementById('m-id').value.trim();
+  const name     = document.getElementById('m-name').value.trim();
+  const due      = document.getElementById('m-due').value;
+  const idErr    = document.getElementById('m-id-error');
+
+  if (!/^\d{6}$/.test(caseId)) {
+    idErr.style.display = 'block';
+    document.getElementById('m-id').focus();
+    return;
+  }
+  idErr.style.display = 'none';
+  if (!name) { document.getElementById('m-name').focus(); return; }
+  if (!due)  { document.getElementById('m-due').focus();  return; }
+
+  const [, mo, d] = due.split('-');
+  CASES.push({
+    id:       caseId,
+    name,
+    opn:      document.getElementById('m-opn').value.trim(),
+    status:   document.getElementById('m-status').value,
+    stage:    document.getElementById('m-stage').value,
+    prio:     document.getElementById('m-prio').value,
+    due:           mo + '/' + d,
+    issues:        parseInt(document.getElementById('m-issues').value) || 0,
+    area:          document.getElementById('m-area').value,
+    failLocation:  document.getElementById('m-fail-location').value,
+    failRate:      parseFloat(document.getElementById('m-fail-rate').value) || null,
+    failureMode:   document.getElementById('m-failure-mode').value.trim(),
+    returnDate:    (() => { const v = document.getElementById('m-return-date').value; if (!v) return ''; const [,rm,rd] = v.split('-'); return rm+'/'+rd; })(),
+    actualDates:   readActualDates('m'),
+    mcpFlag:       document.getElementById('m-mcp').checked,
+  });
+
+  saveCases();
+  updateKPIs();
+  buildTable('all');
+  renderOverallGantt();
+  renderNextActions();
+  document.querySelectorAll('.ftab').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === 'all');
+  });
+  closeModal();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeDetail(); }
+});
+
+/* ── GANTT CHART ────────────────────────────────── */
+const GANTT_LABELS = {
+  initial: 'Initial', i1: 'Interim (1)', i2: 'Interim (2)',
+  i3: 'Interim (3)', i4: 'Interim (4)', f4d: 'F-4D', f8d: 'F-8D',
+};
+
+function renderGanttChart(prefix) {
+  const canvas = document.getElementById(prefix + '-gantt');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const W   = canvas.parentElement.clientWidth || 420;
+  const PL = 72, PR = 16, PT = 18, PB = 38;
+  const ROW_H = 30;
+  const isMcp = !!document.getElementById(prefix + '-mcp')?.checked;
+  const H   = PT + PB + (isMcp ? 3 : 6) * ROW_H;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C  = {
+    border:  cs.getPropertyValue('--border').trim(),
+    accent:  cs.getPropertyValue('--accent').trim(),
+    done:    cs.getPropertyValue('--done').trim(),
+    delayed: cs.getPropertyValue('--delayed').trim(),
+    muted:   cs.getPropertyValue('--text-muted').trim(),
+    today:   '#F09040',
+    arrived: '#DDB030',
+  };
+
+  const returnVal = document.getElementById(prefix + '-return-date')?.value;
+  if (!returnVal) {
+    ctx.fillStyle = C.muted;
+    ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('Chart appears once Units return date is set', W / 2, H / 2);
+    return;
+  }
+
+  const base = new Date(returnVal + 'T00:00:00'); base.setHours(0,0,0,0);
+
+  const _addWd = (refDate, n) => {
+    if (!refDate) return null;
+    const td = new Date(refDate); td.setHours(0,0,0,0);
+    let added = 0;
+    while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+    td.setHours(0,0,0,0);
+    return td;
+  };
+  const _getActual = key => {
+    const av = document.getElementById(prefix + '-ta-' + key)?.value;
+    return av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+  };
+
+  let rows;
+  if (isMcp) {
+    const initActualVal = document.getElementById(prefix + '-ta-initial')?.value || '';
+    const initActual = initActualVal ? new Date(initActualVal + 'T00:00:00') : null;
+    if (initActual) initActual.setHours(0,0,0,0);
+    rows = [
+      { key: 'initial', label: 'Initial',     targetDate: null,                  actualDate: _getActual('initial') },
+      { key: 'i1',      label: 'Interim (1)', targetDate: _addWd(initActual, 4), actualDate: _getActual('i1') },
+      { key: 'i2',      label: 'Interim (2)', targetDate: _addWd(initActual, 7), actualDate: _getActual('i2') },
+    ];
+  } else {
+    const rawRows = TARGET_OFFSETS.map(({ key, n }) => ({
+      key, label: GANTT_LABELS[key], targetDate: _addWd(base, n), actualDate: _getActual(key),
+    }));
+    const i4row  = rawRows.find(r => r.key === 'i4');
+    const f4drow = rawRows.find(r => r.key === 'f4d');
+    rows = rawRows.filter(r => r.key !== 'i4' && r.key !== 'f4d');
+    const f8dIdx = rows.findIndex(r => r.key === 'f8d');
+    rows.splice(f8dIdx, 0, {
+      key: 'i4_f4d', label: 'I(4) / F-4D',
+      targetDate: i4row.targetDate,
+      actualDate:  i4row.actualDate,
+      actualDate2: f4drow ? f4drow.actualDate : null,
+      merged: true,
+    });
+  }
+
+  const today = getEffectiveToday();
+  const _caseStatus = prefix === 'd'
+    ? (CASES.find(c => c.id === detailCaseId)?.status ?? document.getElementById('d-status')?.value)
+    : document.getElementById(prefix + '-status')?.value;
+  const isClosed = _caseStatus === 'close';
+  const allMs = [
+    base,
+    ...(isClosed ? [] : [today]),
+    ...(isClosed
+      ? rows.filter(r => r.targetDate && (r.actualDate || r.actualDate2)).map(r => r.targetDate)
+      : rows.filter(r => r.targetDate).map(r => r.targetDate)),
+    ...rows.filter(r => r.actualDate).map(r => r.actualDate),
+    ...rows.filter(r => r.actualDate2).map(r => r.actualDate2),
+  ].map(d => d.getTime());
+
+  const dayMs2  = 86400000;
+  const padDays2 = 2;
+  const originDay2 = new Date(Math.min(...allMs) - padDays2 * dayMs2); originDay2.setHours(0,0,0,0);
+  const endDay2    = new Date(Math.max(...allMs) + padDays2 * dayMs2); endDay2.setHours(0,0,0,0);
+
+  const NONWD_RATIO2 = 0.25;
+  const posMap2 = new Map();
+  let cumPos2 = 0;
+  const _d2 = new Date(originDay2);
+  while (_d2.getTime() <= endDay2.getTime()) {
+    posMap2.set(_d2.getTime(), cumPos2);
+    cumPos2 += isWorkingDay(_d2) ? 1.0 : NONWD_RATIO2;
+    _d2.setDate(_d2.getDate() + 1);
+  }
+  const totalUnits2 = cumPos2 || 1;
+
+  const cW  = W - PL - PR;
+  const axisY = PT + rows.length * ROW_H;
+  const toX = d => {
+    const k = new Date(d); k.setHours(0,0,0,0);
+    const p = posMap2.get(k.getTime());
+    if (p === undefined) return null;
+    return PL + (p / totalUnits2) * cW;
+  };
+  const toY = i => PT + ROW_H * i + ROW_H / 2;
+
+  /* legend */
+  ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+  ctx.textBaseline = 'middle';
+  const lgY = PT / 2;
+  ctx.fillStyle = C.accent;    ctx.textAlign = 'left';  ctx.fillText('◆ Target', W - PR - 110, lgY);
+  ctx.fillStyle = C.done;      ctx.textAlign = 'left';  ctx.fillText('● Actual', W - PR - 55,  lgY);
+
+  /* row guides + labels */
+  rows.forEach((row, i) => {
+    const y = toY(i);
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(W - PR, y); ctx.stroke();
+    ctx.fillStyle = C.muted;
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(row.label, PL - 6, y);
+  });
+
+  /* x-axis line */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
+  /* Arrived units marker (vertical line across all rows) */
+  const bx = toX(base);
+  if (bx >= PL && bx <= W - PR) {
+    ctx.strokeStyle = C.arrived; ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+    ctx.beginPath(); ctx.moveTo(bx, PT); ctx.lineTo(bx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.save();
+    ctx.translate(bx, PT + 2);
+    ctx.rotate(-Math.PI / 4);
+    ctx.fillStyle = C.arrived; ctx.globalAlpha = 0.9;
+    ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText('Arrived units', 2, 0);
+    ctx.globalAlpha = 1;
+    ctx.restore();
+  }
+
+  /* today line */
+  const tx = toX(today);
+  if (!isClosed && tx >= PL && tx <= W - PR) {
+    ctx.strokeStyle = C.today; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(tx, PT); ctx.lineTo(tx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  /* stage data */
+  rows.forEach((row, i) => {
+    const y   = toY(i);
+    const ttx = row.targetDate ? toX(row.targetDate) : null;
+
+    if (row.merged) {
+      [{ ad: row.actualDate, dy: -6 }, { ad: row.actualDate2, dy: 6 }].forEach(({ ad, dy }) => {
+        if (!ad) return;
+        const ax = toX(ad);
+        if (ax === null) return;
+        const lc = (row.targetDate && ad > row.targetDate) ? C.delayed : C.done;
+        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y + dy); ctx.lineTo(ttx, y + dy); ctx.stroke(); }
+        ctx.strokeStyle = lc; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, y + dy, 7, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = lc;
+        ctx.beginPath(); ctx.arc(ax, y + dy, 5, 0, Math.PI * 2); ctx.fill();
+      });
+    } else {
+      if (row.actualDate) {
+        const ax = toX(row.actualDate);
+        if (ax !== null) {
+          const lc = (row.targetDate && row.actualDate > row.targetDate) ? C.delayed : C.done;
+          ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+          if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke(); }
+          ctx.strokeStyle = lc; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
+          ctx.fillStyle = lc;
+          ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+    }
+
+    /* target diamond — skip if out of range */
+    if (ttx === null) return;
+    const ds = 4;
+    ctx.fillStyle = C.accent;
+    ctx.beginPath();
+    ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
+    ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
+    ctx.closePath(); ctx.fill();
+  });
+
+  /* x-axis: ticks for every working day; D+N relative to today (open) or arrived (closed) */
+  const targetMsSet = new Set();
+  rows.forEach(row => { if (row.targetDate && toX(row.targetDate) !== null) targetMsSet.add(row.targetDate.getTime()); });
+
+  // counter-based D+N: wd_axis = 0 at reference point (today for open, arrived for closed)
+  const axisRef = isClosed ? base : today;
+  let wdToRef = 0;
+  const _cntRef = new Date(originDay2);
+  while (_cntRef.getTime() < axisRef.getTime()) {
+    if (isWorkingDay(_cntRef)) wdToRef++;
+    _cntRef.setDate(_cntRef.getDate() + 1);
+  }
+  let wd_axis = -wdToRef;
+
+  let lastLX = -999;
+  const cur = new Date(originDay2);
+  while (cur.getTime() <= endDay2.getTime()) {
+    if (isWorkingDay(cur)) {
+      const x = toX(cur);
+      if (x !== null && x >= PL && x <= W - PR) {
+        const ms     = cur.getTime();
+        const isT    = ms === today.getTime();
+        const isBase = ms === base.getTime();
+        const isTgt  = !isT && !isBase && targetMsSet.has(ms);
+
+        ctx.strokeStyle = isT ? C.today : isBase ? C.arrived : C.border;
+        ctx.lineWidth   = (isT || isBase) ? 1.5 : 0.5;
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + (isT || isBase || isTgt ? 5 : 3)); ctx.stroke();
+
+        if (x - lastLX >= 22) {
+          const wdLbl = wd_axis === 0
+            ? (isClosed ? 'D+0' : 'D-0')
+            : wd_axis > 0 ? 'D+' + wd_axis : 'D' + wd_axis;
+          const dateLbl = (cur.getMonth()+1) + '/' + String(cur.getDate()).padStart(2,'0');
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillStyle = isT ? C.today : isBase ? C.arrived : isTgt ? C.accent : C.muted;
+          ctx.font = (isT || isBase || isTgt ? 'bold ' : '') + '9px sans-serif';
+          ctx.fillText(wdLbl, x, axisY + 7);
+          ctx.fillStyle = isT ? C.today : C.muted;
+          ctx.font = '8px sans-serif';
+          ctx.fillText(dateLbl, x, axisY + 18);
+          lastLX = x;
+        }
+      }
+      wd_axis++;
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+/* ── OVERALL GANTT ──────────────────────────────── */
+function renderOverallGantt() {
+  const canvas = document.getElementById('overall-gantt');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+
+  const openCases = CASES.filter(c => c.status === 'open' && c.returnDate);
+
+  const CASE_H  = 52;
+  const AXIS_H  = 18;
+  const ROW_TOT = CASE_H + AXIS_H;
+  const PT = 32, PB = 28, PL = 72, PR = 16;
+  const H = PT + PB + Math.max(1, openCases.length) * ROW_TOT;
+  const W = canvas.parentElement.clientWidth || 800;
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  canvas.style.height = H + 'px';
+  ctx.scale(DPR, DPR);
+  ctx.clearRect(0, 0, W, H);
+
+  const cs = getComputedStyle(document.documentElement);
+  const C = {
+    border:  cs.getPropertyValue('--border').trim(),
+    accent:  cs.getPropertyValue('--accent').trim(),
+    done:    cs.getPropertyValue('--done').trim(),
+    delayed: cs.getPropertyValue('--delayed').trim(),
+    muted:   cs.getPropertyValue('--text-muted').trim(),
+    sec:     cs.getPropertyValue('--text-secondary').trim(),
+    pri:     cs.getPropertyValue('--text-primary').trim(),
+    today:   '#F09040',
+  };
+
+  if (!openCases.length) {
+    ctx.fillStyle = C.muted;
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('No active cases', W / 2, H / 2);
+    return;
+  }
+
+  const yr = new Date().getFullYear();
+  const today = getEffectiveToday();
+
+  /* show up to F-4D by default; extend to F-8D only if any case is at Interim(4)+ */
+  const STAGES_NEED_F8D = new Set(['interim-4', 'final-4d', 'final-8d']);
+  const showF8D = openCases.some(c => STAGES_NEED_F8D.has(c.stage));
+  const visibleOffsets = TARGET_OFFSETS.filter(o => showF8D || o.key !== 'f8d');
+
+  const caseRows = openCases.map(c => {
+    const [mm, dd] = c.returnDate.split('/');
+    const base = new Date(`${yr}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
+    base.setHours(0, 0, 0, 0);
+
+    const _getAd = key => {
+      const av = c.actualDates && c.actualDates[key];
+      return av ? (() => { const d = new Date(av + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+    };
+    const _addWdG = (ref, n) => {
+      if (!ref) return null;
+      const td = new Date(ref); td.setHours(0,0,0,0);
+      let added = 0;
+      while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+      td.setHours(0,0,0,0);
+      return td;
+    };
+
+    let stages;
+    if (c.mcpFlag) {
+      const initActualVal = c.actualDates && c.actualDates['initial'];
+      const initActual = initActualVal ? (() => { const d = new Date(initActualVal + 'T00:00:00'); d.setHours(0,0,0,0); return d; })() : null;
+      stages = [
+        { key: 'initial', targetDate: null,                      actualDate: _getAd('initial') },
+        { key: 'i1',      targetDate: _addWdG(initActual, 4),   actualDate: _getAd('i1') },
+        { key: 'i2',      targetDate: _addWdG(initActual, 7),   actualDate: _getAd('i2') },
+      ];
+    } else {
+      stages = visibleOffsets.map(({ key, n }) => {
+        const td = new Date(base.getTime());
+        let added = 0;
+        while (added < n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+        td.setHours(0, 0, 0, 0);
+        return { key, targetDate: td, actualDate: _getAd(key) };
+      });
+    }
+    return { id: c.id, base, stages };
+  });
+
+  /* anchor 제거 — 각 케이스별 D+N 축으로 대체 */
+
+  const allMs = [today.getTime()];
+  caseRows.forEach(r => {
+    allMs.push(r.base.getTime());
+    r.stages.forEach(s => {
+      if (s.targetDate) allMs.push(s.targetDate.getTime());
+      if (s.actualDate) allMs.push(s.actualDate.getTime());
+    });
+  });
+  const dayMs  = 86400000;
+  const padDays = 2;
+  const originDay = new Date(Math.min(...allMs) - padDays * dayMs); originDay.setHours(0,0,0,0);
+  const endDay    = new Date(Math.max(...allMs) + padDays * dayMs); endDay.setHours(0,0,0,0);
+
+  /* compressed x-axis: non-working days get NONWD_RATIO of a working-day slot */
+  const NONWD_RATIO = 0.25;
+  const posMap = new Map();
+  let cumPos = 0;
+  const _d = new Date(originDay);
+  while (_d.getTime() <= endDay.getTime()) {
+    posMap.set(_d.getTime(), cumPos);
+    cumPos += isWorkingDay(_d) ? 1.0 : NONWD_RATIO;
+    _d.setDate(_d.getDate() + 1);
+  }
+  const totalUnits = cumPos || 1;
+
+  const cW  = W - PL - PR;
+  const toX = d => {
+    const k = new Date(d); k.setHours(0,0,0,0);
+    const p = posMap.get(k.getTime());
+    return PL + ((p ?? 0) / totalUnits) * cW;
+  };
+  const toY = i => PT + ROW_TOT * i + CASE_H / 2;
+  const axisY = PT + caseRows.length * ROW_TOT;
+
+  const C_arrived = '#DDB030'; /* amber — distinct from target/actual */
+
+  /* row guides + labels + Arrived marker */
+  caseRows.forEach((row, i) => {
+    const y  = toY(i);
+    const bx = toX(row.base);
+
+    /* row guide line */
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, y); ctx.lineTo(W - PR, y); ctx.stroke();
+
+    /* Case ID label */
+    ctx.fillStyle = C.pri;
+    ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, sans-serif';
+    ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+    ctx.fillText(row.id, PL - 6, y);
+
+    /* Arrived units marker */
+    if (bx >= PL && bx <= W - PR) {
+      /* vertical tick */
+      ctx.strokeStyle = C_arrived; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(bx, y - 8); ctx.lineTo(bx, y + 8); ctx.stroke();
+
+      /* small filled diamond */
+      const ad = 3;
+      ctx.fillStyle = C_arrived;
+      ctx.beginPath();
+      ctx.moveTo(bx, y - ad); ctx.lineTo(bx + ad, y);
+      ctx.lineTo(bx, y + ad); ctx.lineTo(bx - ad, y);
+      ctx.closePath(); ctx.fill();
+
+      /* "Arrived units" label — horizontal, centered on tick */
+      ctx.fillStyle = C_arrived;
+      ctx.globalAlpha = 0.95;
+      ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillText('Arrived units', bx, y - 10);
+      ctx.globalAlpha = 1;
+    }
+  });
+
+  /* x-axis line */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5;
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
+  /* today line (label handled in WD tick section) */
+  const tx = toX(today);
+  if (tx >= PL && tx <= W - PR) {
+    ctx.strokeStyle = C.today; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(tx, PT); ctx.lineTo(tx, axisY); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  const GANTT_SHORT = {
+    initial: 'Init', i1: 'I(1)', i2: 'I(2)', i3: 'I(3)',
+    i4: 'I(4)', f4d: 'F-4D', f8d: 'F-8D',
+  };
+
+  /* stage markers */
+  caseRows.forEach((row, i) => {
+    const y = toY(i);
+    row.stages.forEach((s, si) => {
+      const ttx = s.targetDate ? toX(s.targetDate) : null;
+      if (s.actualDate) {
+        const ax = toX(s.actualDate);
+        const lc = (s.targetDate && s.actualDate > s.targetDate) ? C.delayed : C.done;
+        ctx.strokeStyle = lc; ctx.lineWidth = 1.5; ctx.setLineDash([]);
+        if (ttx !== null) { ctx.beginPath(); ctx.moveTo(ax, y); ctx.lineTo(ttx, y); ctx.stroke(); }
+        ctx.strokeStyle = lc; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(ax, y, 8, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillStyle = lc;
+        ctx.beginPath(); ctx.arc(ax, y, 6, 0, Math.PI * 2); ctx.fill();
+      }
+      if (ttx !== null) {
+        const ds = 4;
+        ctx.fillStyle = C.accent;
+        ctx.beginPath();
+        ctx.moveTo(ttx, y - ds); ctx.lineTo(ttx + ds, y);
+        ctx.lineTo(ttx, y + ds); ctx.lineTo(ttx - ds, y);
+        ctx.closePath(); ctx.fill();
+
+        /* stage label above diamond — skip if next stage shares same target date */
+        const nextTtx = si < row.stages.length - 1 && row.stages[si + 1].targetDate
+          ? toX(row.stages[si + 1].targetDate) : null;
+        const hiddenByNext = nextTtx !== null && Math.abs(ttx - nextTtx) < 2;
+        if (!hiddenByNext) {
+          ctx.fillStyle = C.pri;
+          ctx.globalAlpha = 0.9;
+          ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+          ctx.fillText(GANTT_SHORT[s.key], ttx, y - ds - 3);
+          ctx.globalAlpha = 1;
+        }
+      }
+    });
+  });
+
+  const tickStart = new Date(originDay); tickStart.setHours(0,0,0,0);
+  const tickEnd   = new Date(endDay);    tickEnd.setHours(0,0,0,0);
+
+  /* per-case D+N mini axis (below each row) */
+  caseRows.forEach((row, i) => {
+    const rowAxisY = PT + ROW_TOT * i + CASE_H;
+    ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+    ctx.beginPath(); ctx.moveTo(PL, rowAxisY); ctx.lineTo(W - PR, rowAxisY); ctx.stroke();
+
+    // wd_i = 0 at today (D-0 reference)
+    let wdToToday = 0;
+    const cnt = new Date(tickStart);
+    while (cnt.getTime() < today.getTime()) {
+      if (isWorkingDay(cnt)) wdToToday++;
+      cnt.setDate(cnt.getDate() + 1);
+    }
+
+    let wd_i = -wdToToday;
+    const cur_i = new Date(tickStart);
+    let lastX_i = -999;
+
+    while (cur_i.getTime() <= tickEnd.getTime()) {
+      if (isWorkingDay(cur_i)) {
+        const x = toX(cur_i);
+        if (x >= PL && x <= W - PR && x - lastX_i >= 22) {
+          const isArrived = cur_i.getTime() === row.base.getTime();
+          const isToday   = wd_i === 0;
+          const wdLbl     = wd_i === 0 ? 'D-0' : wd_i > 0 ? 'D+' + wd_i : 'D' + wd_i;
+          ctx.strokeStyle = isToday ? C.today : isArrived ? C_arrived : C.border;
+          ctx.lineWidth   = (isToday || isArrived) ? 1.5 : 0.5;
+          ctx.beginPath(); ctx.moveTo(x, rowAxisY); ctx.lineTo(x, rowAxisY + 4); ctx.stroke();
+          ctx.fillStyle = isToday ? C.today : isArrived ? C_arrived : C.muted;
+          ctx.font = (isToday || isArrived) ? 'bold 10px sans-serif' : '10px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillText(wdLbl, x, rowAxisY + 2);
+          lastX_i = x;
+        }
+        wd_i++;
+      }
+      cur_i.setDate(cur_i.getDate() + 1);
+    }
+  });
+
+  /* bottom axis — calendar dates only */
+  ctx.strokeStyle = C.border; ctx.lineWidth = 0.5; ctx.setLineDash([]);
+  ctx.beginPath(); ctx.moveTo(PL, axisY); ctx.lineTo(W - PR, axisY); ctx.stroke();
+
+  let lastLabelX = -999;
+  const cur = new Date(tickStart);
+  while (cur.getTime() <= tickEnd.getTime()) {
+    if (isWorkingDay(cur)) {
+      const x = toX(cur);
+      const isT = cur.getTime() === today.getTime();
+      if (x >= PL && x <= W - PR) {
+        ctx.strokeStyle = isT ? C.today : C.border;
+        ctx.lineWidth = isT ? 1.5 : 0.5;
+        ctx.setLineDash([]);
+        ctx.beginPath(); ctx.moveTo(x, axisY); ctx.lineTo(x, axisY + 4); ctx.stroke();
+        if (x - lastLabelX >= 22) {
+          const dateLbl = (cur.getMonth() + 1) + '/' + cur.getDate();
+          ctx.fillStyle = isT ? C.today : C.pri;
+          ctx.font = isT ? 'bold 11px sans-serif' : '11px sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+          ctx.fillText(dateLbl, x, axisY + 6);
+          lastLabelX = x;
+        }
+      }
+    }
+    cur.setDate(cur.getDate() + 1);
+  }
+}
+
+/* ── NEXT ACTION TABLE ───────────────────────────── */
+const STAGE_NEXT = {
+  'wait-device': { key: 'initial', label: 'Initial'      },
+  'initial':     { key: 'i1',      label: 'Interim (1)'  },
+  'interim-1':   { key: 'i2',      label: 'Interim (2)'  },
+  'interim-2':   { key: 'i3',      label: 'Interim (3)'  },
+  'interim-3':   { key: 'i4',      label: 'Interim (4)'  },
+  'interim-4':   { key: 'f8d',     label: 'Final 8D'     },
+  'final-4d':    { key: 'f8d',     label: 'Final 8D'     },
+};
+
+const STAGE_NEXT_CLS = {
+  'initial': 'sb-init', 'i1': 'sb-i123', 'i2': 'sb-i123',
+  'i3': 'sb-i123', 'i4': 'sb-i4', 'f4d': 'sb-f4d', 'f8d': 'sb-f8d',
+};
+
+function renderNextActions() {
+  const wrap = document.getElementById('next-actions');
+  if (!wrap) return;
+
+  const yr    = new Date().getFullYear();
+  const today = getEffectiveToday();
+
+  const rows = CASES
+    .filter(c => c.status === 'open' && c.returnDate && STAGE_NEXT[c.stage])
+    .map(c => {
+      const next = STAGE_NEXT[c.stage];
+      const off  = TARGET_OFFSETS.find(o => o.key === next.key);
+      const [mm, dd] = c.returnDate.split('/');
+      const base = new Date(`${yr}-${mm.padStart(2,'0')}-${dd.padStart(2,'0')}T00:00:00`);
+      base.setHours(0, 0, 0, 0);
+      const td = new Date(base.getTime());
+      let added = 0;
+      while (added < off.n) { td.setDate(td.getDate() + 1); if (isWorkingDay(td)) added++; }
+      td.setHours(0, 0, 0, 0);
+      const diffSign = td >= today ? 1 : -1;
+      let diffCount = 0;
+      const cursor = new Date(today.getTime());
+      while (true) {
+        cursor.setDate(cursor.getDate() + diffSign);
+        if (isWorkingDay(cursor)) diffCount++;
+        if (diffSign > 0 ? cursor >= td : cursor <= td) break;
+      }
+      const diff = td.getTime() === today.getTime() ? 0 : diffSign * diffCount;
+      return { c, next, td, diff };
+    })
+    .sort((a, b) => a.diff - b.diff);
+
+  if (!rows.length) {
+    wrap.innerHTML = '<div class="na-empty">No active cases</div>';
+    return;
+  }
+
+  const fmtDate = d => (d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0');
+  const dDayLabel = diff => {
+    if (diff === 0) return 'D-Day';
+    if (diff > 0)  return 'D-' + diff;
+    return 'D+' + Math.abs(diff);
+  };
+  const dDayCls = diff => diff < 0 ? 'overdue' : diff <= 3 ? 'soon' : 'on-time';
+
+  wrap.innerHTML = `
+    <table class="na-table">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>End Customer</th>
+          <th>Next FA Stage</th>
+          <th>Target Date</th>
+          <th style="text-align:right">D-Day</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(({ c, next, td, diff }) => `
+          <tr>
+            <td style="font-weight:600;color:var(--accent)">${c.id}</td>
+            <td style="color:var(--text-primary)">${c.name || '—'}</td>
+            <td><span class="sbadge ${STAGE_NEXT_CLS[next.key]}">${next.label}</span></td>
+            <td style="font-variant-numeric:tabular-nums;color:var(--text-primary)">${fmtDate(td)}</td>
+            <td style="text-align:right"><span class="na-dday ${dDayCls(diff)}">${dDayLabel(diff)}</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table>`;
+}
+
+/* live update when actual dates change */
+['detail-body', 'modal-overlay'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', e => {
+    if (e.target.classList.contains('tdate-actual')) {
+      renderGanttChart(e.target.id.startsWith('d-') ? 'd' : 'm');
+    }
+  });
+});
+
+/* ── DETAIL MODAL ───────────────────────────────── */
+let detailCaseId = null;
+
+function setDetailStatus(val) {
+  document.getElementById('d-status').value = val;
+  document.getElementById('d-stoggle-open').classList.toggle('open-active',   val === 'open');
+  document.getElementById('d-stoggle-close').classList.toggle('close-active', val === 'close');
+}
+
+function selectDetailStage(btn) {
+  document.querySelectorAll('#d-stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const selCls = STAGE_SEL_CLS[btn.dataset.stage] || '';
+  if (selCls) btn.classList.add(selCls);
+  document.getElementById('d-stage').value = btn.dataset.stage;
+}
+
+function openDetail(caseId) {
+  const c = CASES.find(x => x.id === caseId);
+  if (!c) return;
+  detailCaseId = caseId;
+  const isAdmin = currentUser && currentUser.role === 'admin';
+  const sm = STATUS_META[c.status] || { label: c.status, cls: 's-waiting' };
+  const tm = getTimingStatus(c);
+
+  // header
+  document.getElementById('d-caseid-display').textContent = c.id;
+  document.getElementById('d-status-display').innerHTML =
+    `<span class="pill ${sm.cls}"><span class="pill-dot"></span>${sm.label}</span>`;
+  document.getElementById('d-timing-display').innerHTML =
+    `<span class="timing ${tm.cls}">${tm.label}</span>`;
+
+  // fields
+  document.getElementById('d-name').value     = c.name;
+  document.getElementById('d-opn').value      = c.opn || '';
+  document.getElementById('d-mcp').checked    = !!c.mcpFlag;
+  document.getElementById('d-prio').value     = c.prio;
+  document.getElementById('d-issues').value   = c.issues;
+  document.getElementById('d-area').value          = c.area || '';
+  document.getElementById('d-fail-location').value = c.failLocation || '';
+  document.getElementById('d-fail-rate').value     = c.failRate != null ? c.failRate : '';
+  document.getElementById('d-failure-mode').value  = c.failureMode || '';
+
+  // Units return date & Target Date breakdown
+  const yr2 = new Date().getFullYear();
+  let returnDateIso = '';
+  if (c.returnDate) {
+    const [rm, rd] = c.returnDate.split('/');
+    returnDateIso = `${yr2}-${rm.padStart(2,'0')}-${rd.padStart(2,'0')}`;
+    document.getElementById('d-return-date').value = returnDateIso;
+  } else {
+    document.getElementById('d-return-date').value = '';
+  }
+  // status toggle — must be set BEFORE renderGanttChart (called inside loadActualDates)
+  setDetailStatus(c.status);
+
+  renderTargetDates('d', returnDateIso);
+  loadActualDates('d', c.actualDates);
+  onMcpChange('d');
+
+  // date MM/DD → YYYY-MM-DD
+  if (c.due) {
+    const [mo, d] = c.due.split('/');
+    const yr = new Date().getFullYear();
+    document.getElementById('d-due').value = `${yr}-${mo.padStart(2,'0')}-${d.padStart(2,'0')}`;
+  } else {
+    document.getElementById('d-due').value = '';
+  }
+
+  // stage buttons
+  document.querySelectorAll('#d-stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
+  const stageBtn = document.querySelector(`#d-stage-group .stage-btn[data-stage="${c.stage}"]`);
+  if (stageBtn) { const sc = STAGE_SEL_CLS[c.stage]; if (sc) stageBtn.classList.add(sc); }
+  document.getElementById('d-stage').value = c.stage || 'wait-device';
+
+  // timing badge
+  document.getElementById('d-timing-badge').innerHTML =
+    `<span class="timing ${tm.cls}">${tm.label}</span>`;
+
+  // enable / disable based on role
+  document.querySelectorAll('#detail-body input:not([type=hidden]), #detail-body select')
+    .forEach(el => { el.disabled = !isAdmin; });
+  document.querySelectorAll('#d-stage-group .stage-btn, #d-stoggle-open, #d-stoggle-close')
+    .forEach(b => { b.disabled = !isAdmin; });
+
+  // footer
+  document.getElementById('detail-footer').innerHTML = isAdmin
+    ? `<button class="btn-delete" onclick="deleteCurrentCase()">🗑 Delete</button>
+       <button class="btn-cancel" onclick="closeDetail()">Cancel</button>
+       <button class="btn-submit" onclick="saveDetail()">Save</button>`
+    : `<button class="btn-submit" onclick="closeDetail()">Close</button>`;
+
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detail-overlay').classList.remove('open');
+  detailCaseId = null;
+}
+
+function deleteCurrentCase() {
+  if (!detailCaseId) return;
+  if (!confirm('Case ' + detailCaseId + ' will be deleted. Are you sure?')) return;
+  const idx = CASES.findIndex(c => c.id === detailCaseId);
+  if (idx === -1) return;
+  CASES.splice(idx, 1);
+  saveCases();
+  updateKPIs();
+  buildTable(document.querySelector('.ftab.active')?.dataset.filter || 'all');
+  renderOverallGantt();
+  renderNextActions();
+  closeDetail();
+}
+
+function onDetailOverlay(e) {
+  if (e.target === document.getElementById('detail-overlay')) closeDetail();
+}
+
+function saveDetail() {
+  const c = CASES.find(x => x.id === detailCaseId);
+  if (!c) return;
+  const name     = document.getElementById('d-name').value.trim();
+  const due      = document.getElementById('d-due').value;
+  if (!name) return;
+
+  if (due) {
+    const [, mo, d] = due.split('-');
+    c.due = mo + '/' + d;
+  }
+  c.name     = name;
+  c.opn      = document.getElementById('d-opn').value.trim();
+  c.mcpFlag  = document.getElementById('d-mcp').checked;
+  c.status   = document.getElementById('d-status').value;
+  c.stage    = document.getElementById('d-stage').value;
+  c.prio     = document.getElementById('d-prio').value;
+  c.issues   = parseInt(document.getElementById('d-issues').value) || 0;
+  c.area         = document.getElementById('d-area').value;
+  c.failLocation = document.getElementById('d-fail-location').value;
+  c.failRate     = parseFloat(document.getElementById('d-fail-rate').value) || null;
+  c.failureMode  = document.getElementById('d-failure-mode').value.trim();
+
+  const rv = document.getElementById('d-return-date').value;
+  c.returnDate  = rv ? (() => { const [,rm,rd] = rv.split('-'); return rm+'/'+rd; })() : '';
+  c.actualDates = readActualDates('d');
+
+  saveCases();
+  updateKPIs();
+  buildTable(document.querySelector('.ftab.active')?.dataset.filter || 'all');
+  renderOverallGantt();
+  renderNextActions();
+  closeDetail();
+}
+
+/* ── LOGOUT / LOGIN ─────────────────────────────── */
+async function enterDashboard() {
+  const screen = document.getElementById('login-screen');
+  const dash   = document.getElementById('dashboard');
+  screen.style.display = 'none';
+  dash.classList.add('visible');
+  await loadCases();
+  applyRole();
+  initTheme();
+  initKstClock();
+  updateKPIs();
+  buildTable();
+  requestAnimationFrame(animateDonut);
+  setTimeout(() => { renderOverallGantt(); renderNextActions(); }, 50);
+}
+
+function enterAsGuest() {
+  currentUser = { id: 'guest', role: 'guest' };
+  document.getElementById('login-error').classList.remove('visible');
+  enterDashboard();
+}
+
+function handleLogout() {
+  const screen = document.getElementById('login-screen');
+  const dash   = document.getElementById('dashboard');
+  dash.classList.remove('visible');
+  screen.style.display = 'flex';
+  document.getElementById('inp-id').value = '';
+  document.getElementById('inp-pw').value = '';
+  document.getElementById('login-error').classList.remove('visible');
+  currentPct = 0;
+  currentUser = null;
+  CASES.length = 0;
+}
+
+function handleLogin(e) {
+  e.preventDefault();
+  const id = document.getElementById('inp-id').value.trim();
+  const pw = document.getElementById('inp-pw').value;
+  const err = document.getElementById('login-error');
+  const matched = ACCOUNTS.find(a => a.id === id && a.pw === pw);
+  if (matched) {
+    currentUser = matched;
+    err.classList.remove('visible');
+    enterDashboard();
+  } else {
+    err.classList.add('visible');
+    document.getElementById('inp-pw').value = '';
+    document.getElementById('inp-pw').focus();
+  }
+}
+</script>
+
+
+
+</body></html>
