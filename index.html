@@ -1684,9 +1684,9 @@ tbody tr:hover {
             <tr>
               <th>Case</th>
               <th>End customer</th>
-              <th>담당자</th>
-              <th>상태</th>
-              <th>우선순위</th>
+              <th>Operator</th>
+              <th>Status</th>
+              <th>Priority</th>
               <th>FA stage</th>
               <th>SFDC Open date</th>
               <th>Returned Units</th>
@@ -1805,11 +1805,11 @@ tbody tr:hover {
           </div>
           <div class="modal-row">
             <div class="mfield">
-              <label for="d-assignee">담당자</label>
+              <label for="d-assignee">Operator</label>
               <input id="d-assignee" type="text" placeholder="이름">
             </div>
             <div class="mfield">
-              <label for="d-prio">우선순위</label>
+              <label for="d-prio">Priority</label>
               <div class="select-wrap">
                 <select id="d-prio">
                   <option value="H">HIGH</option>
@@ -1821,7 +1821,7 @@ tbody tr:hover {
           </div>
           <div class="modal-row">
             <div class="mfield">
-              <label>상태</label>
+              <label>Status</label>
               <div class="status-toggle">
                 <button type="button" class="stoggle" id="d-stoggle-open" onclick="setDetailStatus('open')">Open</button>
                 <button type="button" class="stoggle" id="d-stoggle-close" onclick="setDetailStatus('close')">Close</button>
@@ -1983,7 +1983,7 @@ tbody tr:hover {
               <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">숫자 6자리를 입력해주세요.</span>
             </div>
             <div class="mfield">
-              <label for="m-assignee">담당자</label>
+              <label for="m-assignee">Operator</label>
               <input id="m-assignee" type="text" placeholder="이름 입력">
             </div>
           </div>
@@ -1997,7 +1997,7 @@ tbody tr:hover {
           </div>
           <div class="modal-row">
             <div class="mfield">
-              <label>상태</label>
+              <label>Status</label>
               <div class="status-toggle">
                 <button type="button" class="stoggle open-active" id="stoggle-open" onclick="setStatus('open')">Open</button>
                 <button type="button" class="stoggle" id="stoggle-close" onclick="setStatus('close')">Close</button>
@@ -2005,7 +2005,7 @@ tbody tr:hover {
               <input type="hidden" id="m-status" value="open">
             </div>
             <div class="mfield">
-              <label for="m-prio">우선순위</label>
+              <label for="m-prio">Priority</label>
               <div class="select-wrap">
                 <select id="m-prio">
                   <option value="H">HIGH</option>
