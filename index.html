@@ -5,6 +5,26 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>FT CASE Dashboard</title>
+<script>
+// Detect server-side updates via ETag and auto-reload stale cached pages
+(function() {
+  try {
+    fetch(location.href, { method: 'HEAD', cache: 'no-store' })
+      .then(function(r) {
+        var tag = r.headers.get('etag') || r.headers.get('last-modified') || '';
+        if (!tag) return;
+        var stored = sessionStorage.getItem('_ftver');
+        if (stored && stored !== tag) {
+          sessionStorage.setItem('_ftver', tag);
+          location.reload();
+        } else {
+          sessionStorage.setItem('_ftver', tag);
+        }
+      })
+      .catch(function() {});
+  } catch(e) {}
+})();
+</script>
 <style>
 :root {
   --bg:              #080C12;
