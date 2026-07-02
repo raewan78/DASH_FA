@@ -2144,12 +2144,11 @@ tbody tr:hover {
 const STORAGE_KEY = 'ft_cases_v1';
 const JB_KEY_STORE = 'ft_jb_key';
 const JB_BIN_STORE = 'ft_jb_bin';
-const JSONBIN_BIN_ID = /* FT_JB_BIN_START */''/* FT_JB_BIN_END */;
+const JSONBIN_BIN_ID     = /* FT_JB_BIN_START */''/* FT_JB_BIN_END */;
+const JSONBIN_MASTER_KEY = /* FT_JB_KEY_START */'$2a$10$rSG0Z.2fIo2rLEPCi16LqOygPyzapnBZPPVcIs0hmaEOClSAM/hwK'/* FT_JB_KEY_END */;
 
-function getJbKey() { return localStorage.getItem(JB_KEY_STORE) || ''; }
-function getBinId()  {
-  return localStorage.getItem(JB_BIN_STORE) || JSONBIN_BIN_ID || '';
-}
+function getJbKey() { return JSONBIN_MASTER_KEY || localStorage.getItem(JB_KEY_STORE) || ''; }
+function getBinId()  { return localStorage.getItem(JB_BIN_STORE) || JSONBIN_BIN_ID || ''; }
 
 function setSyncStatus(state, msg) {
   const el = document.getElementById('sync-status');
