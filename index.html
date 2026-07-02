@@ -3597,6 +3597,9 @@ function openDetail(caseId) {
   } else {
     document.getElementById('d-return-date').value = '';
   }
+  // status toggle — must be set BEFORE renderGanttChart (called inside loadActualDates)
+  setDetailStatus(c.status);
+
   renderTargetDates('d', returnDateIso);
   loadActualDates('d', c.actualDates);
 
@@ -3608,9 +3611,6 @@ function openDetail(caseId) {
   } else {
     document.getElementById('d-due').value = '';
   }
-
-  // status toggle
-  setDetailStatus(c.status);
 
   // stage buttons
   document.querySelectorAll('#d-stage-group .stage-btn').forEach(b => { b.className = 'stage-btn'; });
