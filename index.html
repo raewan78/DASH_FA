@@ -4,7 +4,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>FT CASE 진행 상황</title>
+<title>FT CASE Dashboard</title>
 <style>
 :root {
   --bg:              #080C12;
@@ -1552,20 +1552,20 @@ tbody tr:hover {
     <div class="login-top">
       <div class="login-sys">QA System</div>
       <div class="login-title">FT CASE Dashboard</div>
-      <div class="login-sub">인증된 사용자만 접근할 수 있습니다.</div>
+      <div class="login-sub">Access restricted to authorized users.</div>
     </div>
     <form class="login-form" id="login-form" onsubmit="handleLogin(event)">
       <div class="field">
         <label for="inp-id">ID</label>
-        <input id="inp-id" type="text" placeholder="아이디 입력" autocomplete="username">
+        <input id="inp-id" type="text" placeholder="Enter ID" autocomplete="username">
       </div>
       <div class="field">
         <label for="inp-pw">Password</label>
-        <input id="inp-pw" type="password" placeholder="비밀번호 입력" autocomplete="current-password">
+        <input id="inp-pw" type="password" placeholder="Enter password" autocomplete="current-password">
       </div>
-      <div class="login-error" id="login-error">아이디 또는 비밀번호가 올바르지 않습니다.</div>
-      <button type="submit" class="login-btn">Admin 로그인</button>
-      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 Guest 접속 (View only)</button>
+      <div class="login-error" id="login-error">Incorrect ID or password.</div>
+      <button type="submit" class="login-btn">Admin Login</button>
+      <button type="button" class="guest-btn" onclick="enterAsGuest()">👁 Guest Access (View only)</button>
     </form>
     <div class="login-footer">FT CASE Management &nbsp;·&nbsp; Sprint 3</div>
   </div>
@@ -1578,14 +1578,14 @@ tbody tr:hover {
 <header class="header">
   <div class="header-left">
     <span class="sys-tag">QA System</span>
-    <h1>FT CASE 진행 상황</h1>
+    <h1>FT CASE Dashboard</h1>
   </div>
   <div class="header-right">
     <span class="live"><span class="live-dot"></span>LIVE</span>
     <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
     <span id="sync-status"></span>
-    <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin 동기화 설정">⚙</button>
-    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환">☀️</button>
+    <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin Sync Settings">⚙</button>
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle theme">☀️</button>
     <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
 </header>
@@ -1672,7 +1672,7 @@ tbody tr:hover {
             </button>
           </div>
           <div class="filter-tabs">
-            <button class="ftab active" data-filter="all" onclick="filterTable(this,'all')">전체</button>
+            <button class="ftab active" data-filter="all" onclick="filterTable(this,'all')">All</button>
             <button class="ftab" data-filter="open" onclick="filterTable(this,'open')">Open</button>
             <button class="ftab" data-filter="close" onclick="filterTable(this,'close')">Close</button>
           </div>
@@ -1690,10 +1690,10 @@ tbody tr:hover {
               <th>FA stage</th>
               <th>SFDC Open date</th>
               <th>Returned Units</th>
-              <th>진척도</th>
+              <th>Progress</th>
             </tr>
           </thead>
-          <tbody id="ft-body"><tr onclick="openDetail('009777')" title="클릭하여 상세 보기">
+          <tbody id="ft-body"><tr onclick="openDetail('009777')" title="Click for details">
       <td class="td-id">009777</td>
       <td class="td-name">Insta360</td>
       <td class="td-assignee">RYU</td>
@@ -1703,7 +1703,7 @@ tbody tr:hover {
       <td class="td-date">06/25</td>
       <td><span class="issue issue-y">1</span></td>
       <td><span class="timing t-ontime">On time</span></td>
-    </tr><tr onclick="openDetail('009746')" title="클릭하여 상세 보기">
+    </tr><tr onclick="openDetail('009746')" title="Click for details">
       <td class="td-id">009746</td>
       <td class="td-name">HYBUS</td>
       <td class="td-assignee">RYU</td>
@@ -1735,14 +1735,14 @@ tbody tr:hover {
     <div class="data-modal-body">
       <div id="data-modal-tabs" style="display:flex;gap:6px;margin-bottom:4px;">
         <button id="tab-json" class="data-btn" style="font-size: 12px; opacity: 0.5;" onclick="switchDataTab('json')">📋 JSON</button>
-        <button id="tab-html" class="data-btn" style="font-size: 12px; opacity: 1;" onclick="switchDataTab('html')">📄 페이지로 내보내기</button>
+        <button id="tab-html" class="data-btn" style="font-size: 12px; opacity: 1;" onclick="switchDataTab('html')">📄 Export as Page</button>
       </div>
-      <span class="data-modal-note" id="data-modal-note">아래 JSON을 복사하여 보관하세요. Import로 다시 불러올 수 있습니다.</span>
+      <span class="data-modal-note" id="data-modal-note">Copy the JSON below to save. You can reload it via Import.</span>
       <textarea id="data-modal-ta" spellcheck="false" readonly=""></textarea>
     </div>
     <div class="data-modal-footer">
-      <button class="btn-cancel" onclick="closeDataModal()">닫기</button>
-      <button class="btn-submit" id="data-modal-action">📋 복사</button>
+      <button class="btn-cancel" onclick="closeDataModal()">Close</button>
+      <button class="btn-submit" id="data-modal-action">📋 Copy</button>
     </div>
   </div>
 </div>
@@ -1751,31 +1751,31 @@ tbody tr:hover {
 <div id="settings-overlay" onclick="if(event.target===this)closeSettingsModal()">
   <div class="settings-modal">
     <div class="settings-modal-header">
-      <span class="settings-modal-title">⚙ JSONBin 동기화 설정</span>
+      <span class="settings-modal-title">⚙ JSONBin Sync Settings</span>
       <button class="modal-close" onclick="closeSettingsModal()">×</button>
     </div>
     <div class="settings-modal-body">
       <div class="settings-field">
         <label>Master Key (X-Master-Key)</label>
         <input type="password" id="jb-api-key" placeholder="$2a$10$..." autocomplete="off">
-        <span class="settings-hint">jsonbin.io → Account → API Keys — 이 기기에만 저장됩니다.</span>
+        <span class="settings-hint">jsonbin.io → Account → API Keys — Stored on this device only.</span>
       </div>
       <div class="settings-field">
         <label>Bin ID</label>
         <input type="text" id="jb-bin-id" placeholder="67a1b2c3d4e5f6..." autocomplete="off">
-        <span class="settings-hint">새 Bin을 만들면 ID가 주어집니다. 비워두면 자동 생성합니다.</span>
+        <span class="settings-hint">Leave blank to auto-create a new Bin.</span>
       </div>
       <div style="display:flex;gap:8px;align-items:flex-start;flex-direction:column;">
         <div style="display:flex;gap:8px;">
-          <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 연결 테스트</button>
-          <button class="data-btn" onclick="forceSyncNow()" style="font-size:12px;">⬆ 지금 동기화</button>
+          <button class="data-btn" onclick="testJbConnection()" style="font-size:12px;">🔗 Test Connection</button>
+          <button class="data-btn" onclick="forceSyncNow()" style="font-size:12px;">⬆ Sync Now</button>
         </div>
         <div id="jb-test-result"></div>
       </div>
     </div>
     <div class="settings-modal-footer">
-      <button class="btn-cancel" onclick="closeSettingsModal()">취소</button>
-      <button class="btn-submit" onclick="saveJbSettings()">저장 &amp; 동기화</button>
+      <button class="btn-cancel" onclick="closeSettingsModal()">Cancel</button>
+      <button class="btn-submit" onclick="saveJbSettings()">Save &amp; Sync</button>
     </div>
   </div>
 </div>
@@ -1789,7 +1789,7 @@ tbody tr:hover {
         <span id="d-status-display"></span>
         <span id="d-timing-display"></span>
       </div>
-      <button class="modal-close" onclick="closeDetail()" aria-label="닫기">×</button>
+      <button class="modal-close" onclick="closeDetail()" aria-label="Close">×</button>
     </div>
     <div class="modal-body" id="detail-body">
       <div class="modal-lr">
@@ -1797,16 +1797,16 @@ tbody tr:hover {
         <div class="modal-left-fields">
           <div class="mfield">
             <label for="d-name">End customer</label>
-            <input id="d-name" type="text" placeholder="케이스 내용">
+            <input id="d-name" type="text" placeholder="Customer description">
           </div>
           <div class="mfield">
             <label for="d-opn">OPN</label>
-            <input id="d-opn" type="text" placeholder="OPN 입력">
+            <input id="d-opn" type="text" placeholder="Enter OPN">
           </div>
           <div class="modal-row">
             <div class="mfield">
               <label for="d-assignee">Operator</label>
-              <input id="d-assignee" type="text" placeholder="이름">
+              <input id="d-assignee" type="text" placeholder="Name">
             </div>
             <div class="mfield">
               <label for="d-prio">Priority</label>
@@ -1839,7 +1839,7 @@ tbody tr:hover {
               <input id="d-issues" type="number" min="0">
             </div>
             <div class="mfield">
-              <label>진척도</label>
+              <label>Progress</label>
               <div id="d-timing-badge" style="padding-top:6px;"></div>
             </div>
           </div>
@@ -1847,7 +1847,7 @@ tbody tr:hover {
             <div class="mfield">
               <label for="d-area">Area</label>
               <select id="d-area">
-                <option value="">— 선택 —</option>
+                <option value="">— Select —</option>
                 <option value="APAC">APAC</option>
                 <option value="Korea/Japan">Korea/Japan</option>
                 <option value="Europe">Europe</option>
@@ -1858,7 +1858,7 @@ tbody tr:hover {
             <div class="mfield">
               <label for="d-fail-location">Fail location</label>
               <select id="d-fail-location">
-                <option value="">— 선택 —</option>
+                <option value="">— Select —</option>
                 <option value="Line">Line</option>
                 <option value="Field">Field</option>
               </select>
@@ -1938,7 +1938,7 @@ tbody tr:hover {
             </div>
           </div>
           <div class="mfield gantt-mfield">
-            <label>일정 현황</label>
+            <label>Timeline</label>
             <div class="gantt-wrap">
               <canvas id="d-gantt"></canvas>
             </div>
@@ -1969,8 +1969,8 @@ tbody tr:hover {
 <div id="modal-overlay" onclick="onOverlayClick(event)">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
     <div class="modal-header">
-      <span class="modal-title" id="modal-title">Case 등록</span>
-      <button class="modal-close" onclick="closeModal()" aria-label="닫기">×</button>
+      <span class="modal-title" id="modal-title">Add Case</span>
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">×</button>
     </div>
     <div class="modal-body">
       <div class="modal-lr">
@@ -1979,21 +1979,21 @@ tbody tr:hover {
           <div class="modal-row">
             <div class="mfield">
               <label for="m-id">Case ID</label>
-              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="6자리 숫자 입력" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-              <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">숫자 6자리를 입력해주세요.</span>
+              <input id="m-id" type="text" maxlength="6" inputmode="numeric" pattern="[0-9]{6}" placeholder="Enter 6-digit number" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+              <span id="m-id-error" style="display:none;font-size:11px;color:var(--delayed);margin-top:2px;">Please enter a 6-digit number.</span>
             </div>
             <div class="mfield">
               <label for="m-assignee">Operator</label>
-              <input id="m-assignee" type="text" placeholder="이름 입력">
+              <input id="m-assignee" type="text" placeholder="Enter name">
             </div>
           </div>
           <div class="mfield">
             <label for="m-name">End customer</label>
-            <input id="m-name" type="text" placeholder="케이스 내용 입력">
+            <input id="m-name" type="text" placeholder="Enter customer description">
           </div>
           <div class="mfield">
             <label for="m-opn">OPN</label>
-            <input id="m-opn" type="text" placeholder="OPN 입력">
+            <input id="m-opn" type="text" placeholder="Enter OPN">
           </div>
           <div class="modal-row">
             <div class="mfield">
@@ -2029,7 +2029,7 @@ tbody tr:hover {
             <div class="mfield">
               <label for="m-area">Area</label>
               <select id="m-area">
-                <option value="">— 선택 —</option>
+                <option value="">— Select —</option>
                 <option value="APAC">APAC</option>
                 <option value="Korea/Japan">Korea/Japan</option>
                 <option value="Europe">Europe</option>
@@ -2040,7 +2040,7 @@ tbody tr:hover {
             <div class="mfield">
               <label for="m-fail-location">Fail location</label>
               <select id="m-fail-location">
-                <option value="">— 선택 —</option>
+                <option value="">— Select —</option>
                 <option value="Line">Line</option>
                 <option value="Field">Field</option>
               </select>
@@ -2120,7 +2120,7 @@ tbody tr:hover {
             </div>
           </div>
           <div class="mfield gantt-mfield">
-            <label>일정 현황</label>
+            <label>Timeline</label>
             <div class="gantt-wrap">
               <canvas id="m-gantt"></canvas>
             </div>
@@ -2144,8 +2144,8 @@ tbody tr:hover {
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">취소</button>
-      <button class="btn-submit" onclick="submitCase()">등록</button>
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-submit" onclick="submitCase()">Add</button>
     </div>
   </div>
 </div>
@@ -2537,7 +2537,7 @@ function buildTable(filter = 'all') {
     const tm = getTimingStatus(c);
     const tr = document.createElement('tr');
     tr.setAttribute('onclick', `openDetail('${c.id}')`);
-    tr.setAttribute('title', '클릭하여 상세 보기');
+    tr.setAttribute('title', 'Click for details');
     tr.innerHTML = `
       <td class="td-id">${c.id}</td>
       <td class="td-name">${c.name}</td>
@@ -2685,11 +2685,11 @@ function switchDataTab(tab) {
 function _fillExportJson() {
   const data = { version: 'ft_cases_v1', exportedAt: new Date().toISOString(), cases: CASES };
   const json = JSON.stringify(data, null, 2);
-  document.getElementById('data-modal-note').textContent = '아래 JSON을 복사하여 보관하세요. Import로 다시 불러올 수 있습니다.';
+  document.getElementById('data-modal-note').textContent = 'Copy the JSON below to save. You can reload it via Import.';
   document.getElementById('data-modal-ta').value    = json;
   document.getElementById('data-modal-ta').readOnly = true;
   const btn = document.getElementById('data-modal-action');
-  btn.textContent = '📋 복사';
+  btn.textContent = '📋 Copy';
   btn.onclick = () => _copyTa(btn);
 }
 
@@ -2707,26 +2707,26 @@ function _fillExportHtml() {
       '/* FT_JB_BIN_START */' + JSON.stringify(currentBinId) + '/* FT_JB_BIN_END */'
     );
   }
-  const binNote = currentBinId ? ' JSONBin Bin ID(' + currentBinId.slice(0,8) + '…)도 내장되어 자동 동기화됩니다.' : '';
+  const binNote = currentBinId ? ' JSONBin Bin ID (' + currentBinId.slice(0,8) + '…) is also embedded for auto-sync.' : '';
   document.getElementById('data-modal-note').textContent =
-    '현재 케이스 ' + CASES.length + '건이 내장된 HTML입니다. 이 내용을 복사해 index.html로 저장하거나 새 Artifact로 배포하면 다른 기기에서도 동일한 데이터를 볼 수 있습니다.' + binNote;
+    'This HTML embeds ' + CASES.length + ' cases. Copy and save as index.html or deploy as a new Artifact to share the same data across devices.' + binNote;
   document.getElementById('data-modal-ta').value    = updated;
   document.getElementById('data-modal-ta').readOnly = true;
   const btn = document.getElementById('data-modal-action');
-  btn.textContent = '📋 복사';
+  btn.textContent = '📋 Copy';
   btn.onclick = () => _copyTa(btn);
 }
 
 function _copyTa(btn) {
   const ta = document.getElementById('data-modal-ta');
   navigator.clipboard.writeText(ta.value).then(() => {
-    btn.textContent = '✓ 복사됨';
-    setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800);
   }).catch(() => {
     ta.select();
     document.execCommand('copy');
-    btn.textContent = '✓ 복사됨';
-    setTimeout(() => { btn.textContent = '📋 복사'; }, 1800);
+    btn.textContent = '✓ Copied';
+    setTimeout(() => { btn.textContent = '📋 Copy'; }, 1800);
   });
 }
 
@@ -2739,25 +2739,25 @@ function openExportModal() {
 }
 
 function openImportModal() {
-  document.getElementById('data-modal-title').textContent = '⬆ Import — 데이터 불러오기';
+  document.getElementById('data-modal-title').textContent = '⬆ Import — Load Data';
   document.getElementById('data-modal-tabs').style.display = 'none';
-  document.getElementById('data-modal-note').textContent  = '내보낸 JSON을 아래에 붙여넣고 [불러오기]를 누르세요.';
+  document.getElementById('data-modal-note').textContent  = 'Paste the exported JSON below and click [Import].';
   document.getElementById('data-modal-ta').value          = '';
   document.getElementById('data-modal-ta').readOnly       = false;
   const btn = document.getElementById('data-modal-action');
-  btn.textContent = '⬆ 불러오기';
+  btn.textContent = '⬆ Import';
   btn.onclick = () => {
     try {
       const parsed   = JSON.parse(document.getElementById('data-modal-ta').value);
       const imported = Array.isArray(parsed) ? parsed
         : Array.isArray(parsed.cases) ? parsed.cases : null;
-      if (!imported) { alert('올바른 FT Cases JSON이 아닙니다.'); return; }
-      if (!confirm(`${imported.length}건을 불러옵니다. 기존 데이터를 덮어씁니다. 계속할까요?`)) return;
+      if (!imported) { alert('Not a valid FT Cases JSON.'); return; }
+      if (!confirm(`${imported.length} records will be loaded. This will overwrite existing data. Continue?`)) return;
       CASES.length = 0;
       imported.forEach(c => CASES.push(c));
       saveCases(); updateKPIs(); buildTable('all'); renderOverallGantt(); renderNextActions();
       closeDataModal();
-    } catch { alert('JSON 파싱 오류: 올바른 형식인지 확인하세요.'); }
+    } catch { alert('JSON parse error: please check the format.'); }
   };
   document.getElementById('data-modal-overlay').classList.add('open');
   setTimeout(() => document.getElementById('data-modal-ta').focus(), 50);
@@ -2793,10 +2793,10 @@ function saveJbSettings() {
 async function forceSyncNow() {
   const res = document.getElementById('jb-test-result');
   res.style.color = 'var(--text-muted)';
-  res.textContent = '동기화 중…';
+  res.textContent = 'Syncing…';
   await pushToJsonBin(CASES);
   res.style.color = '#4caf50';
-  res.textContent = '✓ ' + CASES.length + '건 동기화 완료';
+  res.textContent = '✓ ' + CASES.length + ' records synced';
 }
 
 async function testJbConnection() {
@@ -2804,7 +2804,7 @@ async function testJbConnection() {
   const binId = document.getElementById('jb-bin-id').value.trim();
   const res   = document.getElementById('jb-test-result');
   res.style.color = 'var(--text-muted)';
-  res.textContent = '연결 중…';
+  res.textContent = 'Connecting…';
   try {
     if (binId) {
       // Test read of existing bin
@@ -2813,28 +2813,28 @@ async function testJbConnection() {
       const r = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', { headers });
       if (r.ok) {
         res.style.color = '#4caf50';
-        res.textContent = '✓ 연결 성공! Bin을 읽을 수 있습니다.';
+        res.textContent = '✓ Connected! Bin is readable.';
       } else {
         res.style.color = 'var(--prio-h)';
-        res.textContent = '✗ 오류 ' + r.status + ' — API Key 또는 Bin ID를 확인하세요.';
+        res.textContent = '✗ Error ' + r.status + ' — Check API Key or Bin ID.';
       }
     } else if (key) {
       // Test key by listing bins
       const r = await fetch('https://api.jsonbin.io/v3/b', { headers: { 'X-Master-Key': key } });
       if (r.ok || r.status === 200) {
         res.style.color = '#4caf50';
-        res.textContent = '✓ API Key 유효. Bin ID를 입력하거나 저장 시 자동 생성합니다.';
+        res.textContent = '✓ API Key valid. Enter Bin ID or it will be auto-created on save.';
       } else {
         res.style.color = 'var(--prio-h)';
-        res.textContent = '✗ API Key 오류 ' + r.status;
+        res.textContent = '✗ API Key error ' + r.status;
       }
     } else {
       res.style.color = 'var(--prio-h)';
-      res.textContent = 'API Key를 먼저 입력하세요.';
+      res.textContent = 'Please enter an API Key first.';
     }
   } catch(e) {
     res.style.color = 'var(--prio-h)';
-    res.textContent = '✗ 네트워크 오류: ' + e.message;
+    res.textContent = '✗ Network error: ' + e.message;
   }
 }
 
@@ -2979,7 +2979,7 @@ function renderGanttChart(prefix) {
     ctx.fillStyle = C.muted;
     ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('Units return date 입력 시 차트 표시', W / 2, H / 2);
+    ctx.fillText('Chart appears once Units return date is set', W / 2, H / 2);
     return;
   }
 
@@ -3226,7 +3226,7 @@ function renderOverallGantt() {
     ctx.fillStyle = C.muted;
     ctx.font = '10px -apple-system, BlinkMacSystemFont, sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('진행 중인 케이스 없음', W / 2, H / 2);
+    ctx.fillText('No active cases', W / 2, H / 2);
     return;
   }
 
@@ -3508,7 +3508,7 @@ function renderNextActions() {
     .sort((a, b) => a.diff - b.diff);
 
   if (!rows.length) {
-    wrap.innerHTML = '<div class="na-empty">진행 중인 케이스 없음</div>';
+    wrap.innerHTML = '<div class="na-empty">No active cases</div>';
     return;
   }
 
@@ -3638,10 +3638,10 @@ function openDetail(caseId) {
 
   // footer
   document.getElementById('detail-footer').innerHTML = isAdmin
-    ? `<button class="btn-delete" onclick="deleteCurrentCase()">🗑 삭제</button>
-       <button class="btn-cancel" onclick="closeDetail()">취소</button>
-       <button class="btn-submit" onclick="saveDetail()">저장</button>`
-    : `<button class="btn-submit" onclick="closeDetail()">닫기</button>`;
+    ? `<button class="btn-delete" onclick="deleteCurrentCase()">🗑 Delete</button>
+       <button class="btn-cancel" onclick="closeDetail()">Cancel</button>
+       <button class="btn-submit" onclick="saveDetail()">Save</button>`
+    : `<button class="btn-submit" onclick="closeDetail()">Close</button>`;
 
   document.getElementById('detail-overlay').classList.add('open');
 }
@@ -3653,7 +3653,7 @@ function closeDetail() {
 
 function deleteCurrentCase() {
   if (!detailCaseId) return;
-  if (!confirm('Case ' + detailCaseId + '을 삭제하시겠습니까?')) return;
+  if (!confirm('Case ' + detailCaseId + ' will be deleted. Are you sure?')) return;
   const idx = CASES.findIndex(c => c.id === detailCaseId);
   if (idx === -1) return;
   CASES.splice(idx, 1);
