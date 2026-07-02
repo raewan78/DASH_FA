@@ -1579,14 +1579,9 @@ tbody tr:hover {
   </div>
   <div class="header-right">
     <span class="live"><span class="live-dot"></span>LIVE</span>
-    <span>기준일: 2026-06-30</span>
     <span id="role-tag" style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: var(--prio-h);">ADMIN</span>
     <span id="sync-status"></span>
     <button class="settings-btn" id="settings-btn" onclick="openSettingsModal()" title="JSONBin 동기화 설정">⚙</button>
-    <div id="data-actions">
-      <button class="data-btn" onclick="openExportModal()" title="케이스 데이터 내보내기">⬇ Export</button>
-      <button class="data-btn" onclick="openImportModal()" title="케이스 데이터 불러오기">⬆ Import</button>
-    </div>
     <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="테마 전환">☀️</button>
     <button class="logout-btn" id="logout-btn" onclick="handleLogout()">Logout</button>
   </div>
@@ -3186,7 +3181,7 @@ function renderOverallGantt() {
 
   const openCases = CASES.filter(c => c.status === 'open' && c.returnDate);
 
-  const CASE_H  = 38;
+  const CASE_H  = 52;
   const AXIS_H  = 18;
   const ROW_TOT = CASE_H + AXIS_H;
   const PT = 32, PB = 28, PL = 72, PR = 16;
@@ -3365,17 +3360,13 @@ function renderOverallGantt() {
       const nextTtx = si < row.stages.length - 1 ? toX(row.stages[si + 1].targetDate) : null;
       const hiddenByNext = nextTtx !== null && Math.abs(ttx - nextTtx) < 2;
       if (!hiddenByNext) {
-      ctx.save();
-      ctx.translate(ttx, y - ds - 2);
-      ctx.rotate(-Math.PI / 4);
       ctx.fillStyle = C.pri;
       ctx.globalAlpha = 0.9;
-      ctx.font = 'bold 12px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.textAlign = 'left';
+      ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
-      ctx.fillText(GANTT_SHORT[s.key], 1, 0);
+      ctx.fillText(GANTT_SHORT[s.key], ttx, y - ds - 3);
       ctx.globalAlpha = 1;
-      ctx.restore();
       }
     });
   });
