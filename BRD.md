@@ -1,7 +1,7 @@
 # BRD — FT Case Dashboard
 
 **Business Requirements Document**  
-Version: 1.3 | Created: 2026-07-01 | Last updated: 2026-07-03
+Version: 1.4 | Created: 2026-07-01 | Last updated: 2026-07-03
 
 ---
 
@@ -147,3 +147,4 @@ Certain cases follow a Modified Complaint Process (MCP) with a different reporti
 | 1.1 | 2026-07-02 | Added B5 goal, Guest role, BR-01 delete permission, BR-05 cross-device requirement, BR-06 data persistence redefined, scope/constraints updated |
 | 1.2 | 2026-07-03 | BR-03 D+N axis reference updated (open=today-relative, close=arrived-relative), added Effective Today rule for non-business days, UI fully converted to English |
 | 1.3 | 2026-07-03 | BR-01 updated (Operator field removed); BR-02 MCP mode target dates added; BR-03 MCP Gantt rule added; BR-06 ETag auto-reload added; BR-07 MCP Mode new requirement; Scope and Constraints updated |
+| 1.4 | 2026-07-03 | No business requirement changes — UI refinements only (KST clock, admin credential update); see PRD v1.5 |

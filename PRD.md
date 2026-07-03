@@ -1,7 +1,7 @@
 # PRD — FT Case Dashboard
 
 **Product Requirements Document**  
-Version: 1.4 | Created: 2026-07-01 | Last updated: 2026-07-03
+Version: 1.5 | Created: 2026-07-01 | Last updated: 2026-07-03
 
 ---
 
@@ -23,7 +23,7 @@ Version: 1.4 | Created: 2026-07-01 | Last updated: 2026-07-03
 
 | Role | Entry Method | Permissions |
 |------|-------------|-------------|
-| Admin | ID: `admin` / PW: `qwerty0987` | Register / Edit / Delete cases, configure JSONBin, force sync |
+| Admin | ID: `admin` / PW: `shmslc` | Register / Edit / Delete cases, configure JSONBin, force sync |
 | Viewer | ID: (future) | View only (read-only) |
 | Guest | Click "Guest Access (View only)" | View only (read-only), no login required |
 
@@ -117,10 +117,10 @@ This ensures users on other devices automatically receive the latest deployment 
 ### FR-07 Header Layout
 
 ```
-LIVE● | [ADMIN/VIEWER/GUEST badge] | [sync status] | [⚙ Admin only]
+KST HH:MM:SS AM/PM | [ADMIN/VIEWER/GUEST badge] | [sync status] | [⚙ Admin only]
 ```
 
-- LIVE: animated green dot indicating live operation
+- KST clock: real-time Korean Standard Time (Asia/Seoul timezone), updated every second via `setInterval`, 15px tabular-nums font (`initKstClock()`)
 - ⚙ button: Admin only, opens JSONBin config modal
 
 ### FR-08 KPI Bar (5 cards)
@@ -415,7 +415,7 @@ Target dates for Interim (1) and Interim (2) are recalculated live whenever the 
         ↓
 [Dashboard]
 ┌──────────────────────────────────────────────────────────────┐
-│  LIVE● | [ADMIN/VIEWER/GUEST] | [sync status] | [⚙]         │
+│  KST HH:MM:SS AM/PM | [ADMIN/VIEWER/GUEST] | [sync status] | [⚙] │
 ├──────────────────────────────────────────────────────────────┤
 │  KPI: Total | Open | Close | High Priority | Returned Units  │
 ├──────────────────────────────────────────────────────────────┤
@@ -471,3 +471,4 @@ Target dates for Interim (1) and Interim (2) are recalculated live whenever the 
 | 1.2 | 2026-07-02 | Added FR-15 (isClosed from CASES array), FR-16 progress dots, FR-17 horizontal labels, FR-18 D+N axis initial spec, FR-19 closed case range, NONWD_RATIO |
 | 1.3 | 2026-07-03 | Full English rewrite to match English-only UI; FR-05 getEffectiveToday() added; FR-09 column renames (Operator/Status/Priority/Progress/Timeline); FR-18 revised — counter-based wd_axis, open=today-relative D-0, closed=arrived-relative D+0; FR-21 STAGE_NEXT corrected (Interim 4 → Final 8D, Final 4D → Final 8D); FR-06 cache prevention meta tags added; FR-02 Guest button text updated; FR-20 overall Gantt mini axis clarified (today-relative per row) |
 | 1.4 | 2026-07-03 | FR-06 extended with ETag-based auto-reload (HEAD fetch + sessionStorage); FR-09 Operator column removed; FR-10 Operator field removed, MCP checkbox added; FR-12 MCP checkbox note added; FR-23 MCP Mode new FR (target rules, Gantt behavior, handler logic); Data model updated (operator removed, mcpFlag added); Screen layout updated (Operator column removed); Reference updated to BRD v1.3 |
+| 1.5 | 2026-07-03 | FR-02 Admin PW updated to `shmslc`; FR-07 LIVE indicator removed, replaced with KST real-time clock (`initKstClock()`); Screen layout updated |
